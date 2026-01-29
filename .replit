@@ -6,3 +6,6 @@ modules = ["nodejs-20"]
 [nix]
 channel = "stable-24_11"
 packages = ["libuuid"]
+
+[agent]
+expertMode = true
