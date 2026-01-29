@@ -13,21 +13,25 @@ const PORT = process.env.PORT || 7177;
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// ================== ENV & PATHS ==================
-const { NODE_ENV } = process.env;
+// ================== ENV ==================
+const NODE_ENV = process.env.NODE_ENV || "production";
+
+// ================== PATHS ==================
+const ROOT_DIR = __dirname;
+const DASHBOARD_DIST = path.join(ROOT_DIR, "dashboard", "dist");
 
 const dirConfig = path.join(
-  __dirname,
+  ROOT_DIR,
   `config${["production", "development"].includes(NODE_ENV) ? ".dev" : ""}.json`
 );
 
 const dirConfigCommands = path.join(
-  __dirname,
+  ROOT_DIR,
   `configCommands${["production", "development"].includes(NODE_ENV) ? ".dev" : ""}.json`
 );
 
 const ACCOUNT_FILE = path.join(
-  __dirname,
+  ROOT_DIR,
   `Shourov${["production", "development"].includes(NODE_ENV) ? ".dev" : ""}.txt`
 );
 
@@ -82,22 +86,11 @@ global.client = {
   commandBanned: configCommands.commandBanned
 };
 
-// ================== LOAD UTILS (REQUIRED) ==================
+// ================== LOAD UTILS ==================
 const utils = require("./utils.js");
 global.utils = utils;
 
-// ================== DASHBOARD (STATIC) ==================
-// ================== STATIC FILES ==================
-
-// dashboard এর সব js/css/assets serve করবে
-app.use("/dashboard/dist", express.static(path.join(__dirname, "dashboard/dist")));
-
-// শুধু main index.html public থেকে যাবে
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "dashboard/dist/index.html"));
-});
-
-// ================== API: SYSTEM STATS ==================
+// ================== API ROUTES ==================
 app.get("/api/stats", (req, res) => {
   const uptime = process.uptime();
   res.json({
@@ -112,7 +105,7 @@ app.get("/api/stats", (req, res) => {
   });
 });
 
-// ================== API: SAVE APPSTATE (NO UID CHECK) ==================
+// ================== API: SAVE APPSTATE ==================
 app.post("/api/appstate", async (req, res) => {
   const { appstate } = req.body;
 
@@ -121,17 +114,30 @@ app.post("/api/appstate", async (req, res) => {
   }
 
   await fs.writeFile(ACCOUNT_FILE, appstate, "utf8");
-
   res.json({ success: true });
 
   console.log("✅ Appstate saved — restarting bot");
   setTimeout(() => process.exit(2), 1000);
 });
 
-// ================== BOT START (COOKIE থাকলে) ==================
+// ================== STATIC DASHBOARD ==================
+if (fs.existsSync(DASHBOARD_DIST)) {
+  app.use(express.static(DASHBOARD_DIST));
+
+  // ✅ SPA fallback (VERY IMPORTANT)
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(DASHBOARD_DIST, "index.html"));
+  });
+
+  console.log("✅ Dashboard static files loaded");
+} else {
+  console.log("⚠️ Dashboard dist not found. Run `npm run build` inside dashboard/");
+}
+
+// ================== BOT START ==================
 (async () => {
   if (!fs.existsSync(ACCOUNT_FILE)) {
-    console.log("ℹ️ No appstate yet — dashboard only mode");
+    console.log("ℹ️ No appstate — dashboard only mode");
     return;
   }
 
@@ -139,7 +145,7 @@ app.post("/api/appstate", async (req, res) => {
   require(`./bot/login/login${NODE_ENV === "development" ? ".dev.js" : ".js"}`);
 })();
 
-// ================== SERVER START (ALWAYS LAST) ==================
+// ================== SERVER START ==================
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🌐 Dashboard running on http://localhost:${PORT}`);
+  console.log(`🌐 Server running at http://localhost:${PORT}`);
 });
