@@ -3,6 +3,7 @@
   "build": "vite build",
   "preview": "vite preview"
 },
+  "type": "module",
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
