@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Cyberpunk Palette */
+  --bg-dark: 240 10% 4%;       /* #0a0a0b */
+  --bg-panel: 240 10% 7%;      /* #111113 */
+  
+  --neon-green: 111 100% 54%;  /* #39ff14 */
+  --neon-blue: 180 100% 50%;   /* #00ffff */
+  --neon-pink: 300 100% 50%;   /* #ff00ff */
+  --neon-purple: 283 99% 54%;  /* #bc13fe */
+  --neon-yellow: 60 100% 50%;  /* #ffff00 */
+  --neon-red: 0 100% 50%;      /* #ff0000 */
+
+  /* Base shadcn overrides for dark theme */
+  --background: var(--bg-dark);
+  --foreground: 0 0% 98%;
+
+  --card: var(--bg-panel);
+  --card-foreground: 0 0% 98%;
+ 
+  --popover: var(--bg-panel);
+  --popover-foreground: 0 0% 98%;
+ 
+  --primary: var(--neon-blue);
+  --primary-foreground: 240 5.9% 10%;
+ 
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+ 
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+ 
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+ 
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+ 
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: var(--neon-blue);
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Rajdhani', sans-serif;
+    background-image: 
+      linear-gradient(rgba(10, 10, 11, 0.95), rgba(10, 10, 11, 0.95)),
+      url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231a1a1a' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif;
+    @apply tracking-wider uppercase;
+  }
+}
+
+@layer utilities {
+  .text-neon-green { color: hsl(var(--neon-green)); }
+  .text-neon-blue { color: hsl(var(--neon-blue)); }
+  .text-neon-pink { color: hsl(var(--neon-pink)); }
+  .text-neon-purple { color: hsl(var(--neon-purple)); }
+  
+  .border-neon-green { border-color: hsl(var(--neon-green)); }
+  .border-neon-blue { border-color: hsl(var(--neon-blue)); }
+  .border-neon-pink { border-color: hsl(var(--neon-pink)); }
+  .border-neon-purple { border-color: hsl(var(--neon-purple)); }
+
+  .shadow-neon-green { box-shadow: 0 0 10px hsl(var(--neon-green) / 0.3), 0 0 20px hsl(var(--neon-green) / 0.1); }
+  .shadow-neon-blue { box-shadow: 0 0 10px hsl(var(--neon-blue) / 0.3), 0 0 20px hsl(var(--neon-blue) / 0.1); }
+  .shadow-neon-pink { box-shadow: 0 0 10px hsl(var(--neon-pink) / 0.3), 0 0 20px hsl(var(--neon-pink) / 0.1); }
+  
+  .glass-panel {
+    @apply bg-black/40 backdrop-blur-md border border-white/10;
+  }
+  
+  .cyber-input {
+    @apply bg-black/50 border border-white/10 text-white placeholder:text-gray-600 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 focus:shadow-[0_0_10px_rgba(0,255,255,0.3)] transition-all duration-300;
+  }
+
+  .cyber-button {
+    @apply relative overflow-hidden bg-transparent border transition-all duration-300 uppercase tracking-widest font-bold;
+  }
+  
+  .cyber-button::before {
+    content: '';
+    @apply absolute top-0 left-[-100%] w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-25deg] transition-all duration-500;
+  }
+  
+  .cyber-button:hover::before {
+    @apply left-[100%];
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0a0a0b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--neon-blue));
+  }
+}
