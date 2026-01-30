@@ -177,7 +177,7 @@ global.temp = {
 // ———————————————— DASHBOARD ROUTES ———————————————— //
 
 app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname,dashboard', 'dist','public','index.html'));
+	res.sendFile(path.join(__dirname,'dashboard', 'dist','public','index.html'));
 });
 
 app.get('/appstate', (req, res) => {
