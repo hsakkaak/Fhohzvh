@@ -14,6 +14,8 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // ================== ENV ==================
+const ROOT_DIR = __dirname;
+
 const NODE_ENV = process.env.NODE_ENV || "production";
 
 const dirConfig = path.join(
