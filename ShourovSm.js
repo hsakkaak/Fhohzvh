@@ -129,8 +129,6 @@ app.get("*", (req, res) => {
 });
 
 console.log("✅ Dashboard static files loaded");
-  console.log("⚠️ Dashboard dist not found. Run `npm run build` inside dashboard/");
-}
 
 // ================== BOT START ==================
 (async () => {
