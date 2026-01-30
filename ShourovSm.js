@@ -121,13 +121,13 @@ app.post("/api/appstate", async (req, res) => {
 });
 
 // ================== STATIC DASHBOARD ==================
-if (fs.existsSync(DASHBOARD_DIST)) {
-  app.use(express.static(DASHBOARD_DIST));
+const DASHBOARD_DIST = path.join(__dirname, "dashboard", "dist", "public");
 
-  // React Router SPA fallback (VERY IMPORTANT)
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(DASHBOARD_DIST, "index.html"));
-  });
+app.use(express.static(DASHBOARD_DIST));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(DASHBOARD_DIST, "index.html"));
+});
 
   console.log("✅ Dashboard static files loaded");
 } else {
