@@ -3,43 +3,41 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 
 export default defineConfig(async ({ mode }) => {
-  const plugins: (Plugin | Plugin[])[] = [
-    react() as any,
-  ];
+  const plugins: (Plugin | Plugin[])[] = [react()];
 
   if (mode !== "production" && process.env.REPL_ID !== undefined) {
-    const cartographer = await import("@replit/vite-plugin-cartographer").then((m) => m.cartographer());
-    const devBanner = await import("@replit/vite-plugin-dev-banner").then((m) => m.devBanner());
-    plugins.push(cartographer as any, devBanner as any);
+    const { cartographer } = await import("@replit/vite-plugin-cartographer");
+    const { devBanner } = await import("@replit/vite-plugin-dev-banner");
+    plugins.push(cartographer(), devBanner());
   }
 
   return {
     plugins,
+
+    // ⭐⭐⭐ THIS IS THE MOST IMPORTANT LINE ⭐⭐⭐
+    base: "/",   // <-- এটা না থাকলেই সাদা স্ক্রিন
+
     resolve: {
       alias: {
-        "@": path.resolve(import.meta.dirname, "src"),
-        "@shared": path.resolve(import.meta.dirname, "shared"),
-        "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+        "@": path.resolve(__dirname, "src"),
+        "@shared": path.resolve(__dirname, "shared"),
+        "@assets": path.resolve(__dirname, "attached_assets"),
       },
     },
-    root: path.resolve(import.meta.dirname),
+
     build: {
-      outDir: path.resolve(import.meta.dirname, "dist/public"),
+      outDir: path.resolve(__dirname, "dist/public"),
       emptyOutDir: true,
-      reportCompressedSize: false,
-      chunkSizeWarningLimit: 1000,
     },
+
     server: {
-      host: "0.0.0.0",
+      host: true,            // Replit / Render safe
       port: 5000,
       strictPort: true,
-      allowedHosts: true,
+      allowedHosts: "all",   // ❗ boolean নয়
       hmr: {
+        protocol: "wss",
         clientPort: 443,
-      },
-      fs: {
-        strict: true,
-        deny: ["**/.*"],
       },
     },
   };
