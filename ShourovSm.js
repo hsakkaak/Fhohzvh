@@ -16,10 +16,6 @@ app.use(express.urlencoded({ extended: true }));
 // ================== ENV ==================
 const NODE_ENV = process.env.NODE_ENV || "production";
 
-// ================== PATHS ==================
-const ROOT_DIR = __dirname;
-const DASHBOARD_DIST = path.join(ROOT_DIR, "dashboard", "dist", "public");
-
 const dirConfig = path.join(
   ROOT_DIR,
   `config${["production", "development"].includes(NODE_ENV) ? ".dev" : ""}.json`
@@ -123,16 +119,19 @@ app.post("/api/appstate", async (req, res) => {
 // ================== STATIC DASHBOARD ==================
 const DASHBOARD_DIST = path.join(__dirname, "dashboard", "dist", "public");
 
-app.use(express.static(DASHBOARD_DIST));
+if (fs.existsSync(DASHBOARD_DIST)) {
+  app.use(express.static(DASHBOARD_DIST));
 
-app.get("*", (req, res) => {
-  res.sendFile(path.join(DASHBOARD_DIST, "index.html"));
-});
+  // React Router SPA fallback (VERY IMPORTANT)
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(DASHBOARD_DIST, "index.html"));
+  });
 
   console.log("✅ Dashboard static files loaded");
 } else {
   console.log("⚠️ Dashboard dist not found. Run `npm run build` inside dashboard/");
 }
+
 
 // ================== BOT START ==================
 (async () => {
