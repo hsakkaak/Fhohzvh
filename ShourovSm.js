@@ -177,11 +177,11 @@ global.temp = {
 // ———————————————— DASHBOARD ROUTES ———————————————— //
 
 app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname,dashboard', 'public/index.html'));
+	res.sendFile(path.join(__dirname,dashboard', 'dist','public/index.html'));
 });
 
-app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname, dashboard','public/appstate.html'));
+app.get('/appstate', (req, res) => {
+	res.sendFile(path.join(__dirname, 'dashboard','dist','public/appstate.html'));
 });
 
 app.get("/api/stats", (req, res) => {
