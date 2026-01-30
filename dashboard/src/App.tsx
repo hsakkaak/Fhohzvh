@@ -64,7 +64,6 @@ function Router() {
         <ProtectedRoute component={Files} />
       </Route>
 
-      {/* fallback */}
       <Route component={NotFound} />
     </Switch>
   );
