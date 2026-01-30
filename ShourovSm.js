@@ -18,7 +18,7 @@ const NODE_ENV = process.env.NODE_ENV || "production";
 
 // ================== PATHS ==================
 const ROOT_DIR = __dirname;
-const DASHBOARD_DIST = path.join(ROOT_DIR, "dashboard", "dist", "public");
+const DASHBOARD_DIST = path.join(ROOT_DIR, "dashboard");
 
 const dirConfig = path.join(
   ROOT_DIR,
