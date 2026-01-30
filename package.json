@@ -2,7 +2,7 @@
 	"name": "goat-bot-v2",
 	"version": "1.5.35",
 	"description": "A simple Bot chat messenger using personal account. Made by NTKhang.",
-	"main": "index.js",
+	"main": "Shourov.js",
 	"engines": {
 		"node": "18.x",
 		"npm": ">=7.0.0"
