@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Chat Test • SHOUROV BOT</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-black text-white p-6">
+
+<div class="max-w-3xl mx-auto space-y-4">
+
+<h2 class="text-3xl text-center text-cyan-400">🤖 AI Chat Test Panel</h2>
+
+<div id="chatBox" class="h-96 overflow-y-auto bg-gray-900 p-4 rounded-xl space-y-2"></div>
+
+<div class="flex gap-2">
+  <input id="msg" class="flex-1 bg-gray-800 p-3 rounded-lg"
+         placeholder="Type message or command (!help)">
+  <button onclick="send()" class="bg-cyan-500 px-5 rounded-lg">
+    Send
+  </button>
+</div>
+
+</div>
+
+<script src="/js/chat.js"></script>
+</body>
+</html>
