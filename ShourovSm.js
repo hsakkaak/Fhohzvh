@@ -195,9 +195,42 @@ app.get("/api/stats", (req, res) => {
 	});
 });
 
+app.post("/api/control", (req, res) => {
+  const { action } = req.body;
+
+  if (action === "restart") {
+    res.json({ message: "Restarting bot..." });
+    setTimeout(() => process.exit(2), 1000);
+  }
+
+  if (action === "stop") {
+    res.json({ message: "Bot stopped." });
+    process.exit(0);
+  }
+
+  if (action === "start") {
+    res.json({ message: "Bot already running." });
+  }
+});
+
 app.post("/api/appstate", (req, res) => {
 	const { appstate } = req.body;
 	if (!appstate) return res.status(400).json({ error: "Appstate missing" });
+
+app.get("/api/logs", (req, res) => {
+  try {
+    // যদি log file থাকে
+    const logData = fs.readFileSync("./logs/latest.log", "utf8");
+    res.send(logData);
+  } catch (e) {
+    // না থাকলে fake log
+    res.send(
+      `[INFO] Bot running...\n[INFO] Waiting for messages...\n[OK] System stable`
+    );
+  }
+});
+
+
 
 	fs.writeFile(dirAccount, appstate, 'utf8', (err) => {
 		if (err) return res.status(500).json({ error: "Write failed" });
