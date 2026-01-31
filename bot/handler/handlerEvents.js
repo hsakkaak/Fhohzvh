@@ -266,6 +266,13 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
 				);
 			}
 
+// 🔒 Disabled command check (Dashboard control)
+if (global.GoatBot.config.disabledCommands?.includes(commandName)) {
+  return await message.reply(
+    "❌ This command is disabled by admin from dashboard."
+  );
+}
+
 			// ✅ Permission / Role check
 			const roleConfig = getRoleConfig(utils, command, isGroup, threadData, commandName);
 			const needRole = roleConfig.onStart;
