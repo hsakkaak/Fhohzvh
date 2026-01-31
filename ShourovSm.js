@@ -179,13 +179,21 @@ global.temp = {
 app.post("/api/command-toggle", (req, res) => {
   const { command, enable } = req.body;
 
-  if (!global.GoatBot.commands.has(command))
-    return res.json({ error: "Command not found" });
+  const configPath = path.join(__dirname, "config.json");
+  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+
+  config.disabledCommands = config.disabledCommands || [];
 
   if (!enable) {
-    global.GoatBot.commands.delete(command);
+    if (!config.disabledCommands.includes(command)) {
+      config.disabledCommands.push(command);
+    }
+  } else {
+    config.disabledCommands =
+      config.disabledCommands.filter(c => c !== command);
   }
 
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   res.json({ success: true });
 });
 
