@@ -1,21 +1,21 @@
 process.on('unhandledRejection', error => console.log(error));
 process.on('uncaughtException', error => console.log(error));
 
+const path = require("path");
 const axios = require("axios");
 const fs = require("fs-extra");
 const google = require("googleapis").google;
 const nodemailer = require("nodemailer");
 const express = require("express");
 const app = express();
-app.use(express.static(path.join(__dirname, "public")));
 // Replit deployment er jonno port fix
 const port = process.env.PORT || 7177; 
 const { execSync } = require('child_process');
 const log = require('./logger/log.js');
-const path = require("path");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0;
 
@@ -175,15 +175,7 @@ global.temp = {
 	require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
 })();
 
-// ———————————————— DASHBOARD ROUTES ———————————————— //
 
-app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname, 'public/index.html'));
-});
-
-app.get('/appstate', (req, res) => {
-	res.sendFile(path.join(__dirname, 'public/appstate.html'));
-});
 
 app.get("/api/stats", (req, res) => {
 	const os = require('os');
