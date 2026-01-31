@@ -7,6 +7,7 @@ const google = require("googleapis").google;
 const nodemailer = require("nodemailer");
 const express = require("express");
 const app = express();
+app.use(express.static(path.join(__dirname, "public")));
 // Replit deployment er jonno port fix
 const port = process.env.PORT || 7177; 
 const { execSync } = require('child_process');
@@ -217,6 +218,14 @@ app.post("/api/appstate", (req, res) => {
 	const { appstate } = req.body;
 	if (!appstate) return res.status(400).json({ error: "Appstate missing" });
 
+
+	fs.writeFile(dirAccount, appstate, 'utf8', (err) => {
+		if (err) return res.status(500).json({ error: "Write failed" });
+		res.json({ success: true });
+		setTimeout(() => process.exit(2), 1000);
+	});
+});
+
 app.get("/api/logs", (req, res) => {
   try {
     // যদি log file থাকে
@@ -228,15 +237,6 @@ app.get("/api/logs", (req, res) => {
       `[INFO] Bot running...\n[INFO] Waiting for messages...\n[OK] System stable`
     );
   }
-});
-
-
-
-	fs.writeFile(dirAccount, appstate, 'utf8', (err) => {
-		if (err) return res.status(500).json({ error: "Write failed" });
-		res.json({ success: true });
-		setTimeout(() => process.exit(2), 1000);
-	});
 });
 
 // Port listening for Replit Health Check
