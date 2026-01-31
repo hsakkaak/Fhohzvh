@@ -189,13 +189,13 @@ global.temp = {
 	require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
 })();
 
-app.post("/api/command-toggle", (req, res) => {
+app.post("/api/command-toggle", requireLogin, (req, res) => {
   const { command, enable } = req.body;
 
   const configPath = path.join(__dirname, "config.json");
   const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
-  config.disabledCommands = config.disabledCommands || [];
+  config.disabledCommands ||= [];
 
   if (!enable) {
     if (!config.disabledCommands.includes(command)) {
@@ -233,7 +233,7 @@ app.get("/api/stats", (req, res) => {
 	});
 });
 
-app.post("/api/control", (req, res) => {
+app.post("/api/control", requireLogin, (req, res) => {
   const { action } = req.body;
 
   if (action === "restart") {
@@ -276,7 +276,7 @@ app.get("/api/logs", (req, res) => {
   }
 });
 
-app.get("/api/commands", (req, res) => {
+app.get("/api/commands", requireLogin, (req, res) => {
   const commands = [...global.GoatBot.commands.keys()];
   const disabled = global.GoatBot.config.disabledCommands || [];
 
@@ -288,47 +288,19 @@ app.get("/api/commands", (req, res) => {
   );
 });
 
-app.post("/api/command-toggle", (req, res) => {
-  const { command, enable, uid } = req.body;
+  
+app.post("/api/settings", requireLogin, (req, res) => {
+  const { key, value } = req.body;
 
-  const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
+  const configPath = path.join(__dirname, "config.json");
+  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
 
-  // 🔒 OWNER CHECK
-  if (uid !== config.dashboardOwner) {
-    return res.status(403).json({
-      error: "Only SHOUROV can use this feature"
-    });
-  }
+  config[key] = value;
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-  config.disabledCommands ||= [];
-
-  if (!enable) {
-    if (!config.disabledCommands.includes(command))
-      config.disabledCommands.push(command);
-  } else {
-    config.disabledCommands =
-      config.disabledCommands.filter(c => c !== command);
-  }
-
-  fs.writeFileSync("config.json", JSON.stringify(config, null, 2));
   res.json({ success: true });
 });
 
-app.post("/api/settings", (req, res) => {
-  const { key, value } = req.body;
-
-  try {
-    const configPath = path.join(__dirname, "config.json");
-    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-
-    config[key] = value;
-
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: "Failed to update setting" });
-  }
-});
 app.get("/api/botinfo", (req, res) => {
   const groups = global.db.allThreadData?.length || 0;
   const users = global.db.allUserData?.length || 0;
