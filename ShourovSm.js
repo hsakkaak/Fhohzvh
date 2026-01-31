@@ -212,13 +212,14 @@ app.post("/api/command-toggle", (req, res) => {
 
 app.post("/api/login", (req, res) => {
   const { password } = req.body;
-  const config = require("./config.json");
+  const config = require(dirConfig);
 
-  if (password === config.dashboardAuth.password) {
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ error: "Invalid password" });
+  if (password === config.dashboardPassword) {
+    req.session.loggedIn = true;
+    return res.json({ success: true });
   }
+
+  res.status(401).json({ error: "Wrong password" });
 });
 
 app.get("/api/stats", (req, res) => {
