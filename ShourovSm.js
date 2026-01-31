@@ -28,7 +28,9 @@ function requireLogin(req, res, next) {
 }
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
+app.get("/login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/login.html"));
+});
 
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0;
 
