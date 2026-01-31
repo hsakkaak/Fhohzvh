@@ -18,9 +18,7 @@ body{
   overflow-x:hidden;
 }
 
-.neon{
-  box-shadow:0 0 20px currentColor;
-}
+.neon{ box-shadow:0 0 20px currentColor; }
 
 .card{
   background:rgba(255,255,255,.04);
@@ -29,9 +27,7 @@ body{
   border-radius:22px;
   transition:.4s;
 }
-.card:hover{
-  transform:translateY(-6px) scale(1.02);
-}
+.card:hover{ transform:translateY(-6px) scale(1.02); }
 
 .glow-blue{color:#00f2ff}
 .glow-pink{color:#ff007a}
@@ -68,8 +64,12 @@ video{border-radius:18px;cursor:pointer}
     <p class="text-sm text-gray-400 mt-1 typing">Developer • Automation • AI Bot</p>
 
     <div class="flex gap-4 mt-4 text-2xl">
-      <a href="https://www.facebook.com/shourov.sm24" target="_blank"><i class="fab fa-facebook glow-blue"></i></a>
-      <a href="https://wa.me/8801709281334" target="_blank"><i class="fab fa-whatsapp glow-green"></i></a>
+      <a href="https://www.facebook.com/shourov.sm24" target="_blank">
+        <i class="fab fa-facebook glow-blue"></i>
+      </a>
+      <a href="https://wa.me/8801709281334" target="_blank">
+        <i class="fab fa-whatsapp glow-green"></i>
+      </a>
     </div>
   </div>
 
@@ -77,6 +77,18 @@ video{border-radius:18px;cursor:pointer}
     <div class="text-xs text-gray-400">BD TIME</div>
     <div id="bdtime" class="text-xl glow-yellow neon"></div>
   </div>
+</div>
+
+<!-- 🔔 OPTION A -->
+<div class="card p-4 glow-purple neon text-center">
+  <i class="fa-solid fa-envelope mr-2"></i>
+  For business inquiries or technical support, inbox me.
+</div>
+
+<!-- 🔧 OPTION B -->
+<div class="card p-4 glow-blue neon text-center">
+  <i class="fa-solid fa-gear mr-2"></i>
+  Offering bot setup, automation support & custom dashboards.
 </div>
 
 <!-- 📊 STATS -->
@@ -125,13 +137,15 @@ video.onclick=()=>{
 };
 
 async function loadBotInfo(){
-  const r=await fetch("/api/botinfo");
-  const d=await r.json();
-  groups.innerText=d.groups;
-  users.innerText=d.users;
-  commands.innerText=d.commands;
-  admins.innerText=d.admins;
-  bdtime.innerText=d.bdTime;
+  try{
+    const r=await fetch("/api/botinfo");
+    const d=await r.json();
+    groups.innerText=d.groups;
+    users.innerText=d.users;
+    commands.innerText=d.commands;
+    admins.innerText=d.admins;
+    bdtime.innerText=d.bdTime;
+  }catch(e){}
 }
 
 setInterval(loadBotInfo,1000);
