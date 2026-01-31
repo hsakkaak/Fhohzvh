@@ -3,263 +3,281 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Appstate Editor - SHOUROV-BOT</title>
+    <title>GoatBot Dashboard | Ultra Neon</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
 
         :root {
             --neon-blue: #00f2ff;
-            --neon-purple: #bc13fe;
-            --neon-green: #39ff14;
-            --bg-dark: #050505;
+            --neon-purple: #9d00ff;
+            --neon-pink: #ff007a;
+            --bg-dark: #030712;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: default;
         }
 
         body {
-            background-color: var(--bg-dark);
+            background: var(--bg-dark);
             color: white;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             min-height: 100vh;
             overflow-x: hidden;
-            perspective: 1000px;
+            /* Cyber Grid Effect */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        .mesh-bg {
+        /* Animated Background Orbs */
+        .orb {
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            filter: blur(100px);
             z-index: -1;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(0, 242, 255, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(188, 19, 254, 0.15) 0%, transparent 40%);
-            filter: blur(80px);
-            animation: meshMove 15s ease-in-out infinite alternate;
+            opacity: 0.15;
+            animation: orbMove 20s infinite alternate;
+        }
+        .orb-1 { background: var(--neon-blue); top: -10%; left: -10%; }
+        .orb-2 { background: var(--neon-purple); bottom: -10%; right: -10%; animation-delay: -5s; }
+
+        @keyframes orbMove {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(100px, 50px) scale(1.1); }
         }
 
-        @keyframes meshMove {
-            0% { transform: scale(1) translate(0,0); }
-            100% { transform: scale(1.2) translate(5%, 5%); }
-        }
-
-        .neon-card {
+        .glass-card {
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
-            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             position: relative;
+            overflow: hidden;
         }
 
-        .neon-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(0, 242, 255, 0.5);
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+        /* Mouse Tracking Neon Effect */
+        .stat-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
         }
 
-        .glow-text {
-            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.1) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        textarea {
-            background: rgba(0, 0, 0, 0.6) !important;
-            border: 1px solid rgba(188, 19, 254, 0.3) !important;
-            color: var(--neon-blue) !important;
-            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
-            resize: none;
+        .stat-card:hover::before {
+            opacity: 1;
         }
 
-        textarea:focus {
-            border-color: var(--neon-blue) !important;
-            box-shadow: 0 0 20px rgba(0, 242, 255, 0.2) !important;
-            outline: none;
+        .jetbrains { font-family: 'JetBrains Mono', monospace; }
+
+        /* Progress Bar Neon Glow */
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
         }
 
-        .btn-cyber {
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 10px currentColor;
+            transition: width 1s ease-in-out;
+        }
+
+        /* Neon Buttons */
+        .btn-neon {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s;
             position: relative;
-            background: transparent;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: 0.4s;
-            cursor: pointer;
+            overflow: hidden;
         }
 
-        .btn-cyber:hover:not(:disabled) {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 30px var(--neon-blue);
+        .btn-neon:hover {
+            background: white;
+            color: black;
+            box-shadow: 0 0 20px white;
+            transform: scale(1.02);
         }
 
-        .btn-cyber:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            border-color: gray;
-            color: gray;
+        .btn-danger-neon:hover {
+            background: var(--neon-pink);
+            color: white;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 25px var(--neon-pink);
         }
 
-        .btn-cyber-purple {
-            border-color: var(--neon-purple);
-            color: var(--neon-purple);
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse-dot 2s infinite;
         }
 
-        .btn-cyber-purple:hover:not(:disabled) {
-            background: var(--neon-purple);
-            color: #fff;
-            box-shadow: 0 0 30px var(--neon-purple);
+        @keyframes pulse-dot {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
         }
-
-        .step-item { transition: 0.3s; border-left: 2px solid transparent; }
-        .step-item:hover { background: rgba(255,255,255,0.05); padding-left: 1.5rem; }
     </style>
 </head>
-<body class="p-4 md:p-12">
-    <div class="mesh-bg"></div>
+<body class="p-4 md:p-10">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
 
-    <div class="max-w-5xl mx-auto">
-        <header class="neon-card rounded-3xl p-8 mb-10 flex flex-col md:flex-row justify-between items-center">
+    <div class="max-w-7xl mx-auto">
+        <header class="glass-card p-6 md:p-8 mb-8 flex flex-col md:flex-row justify-between items-center">
             <div>
-                <h1 class="text-5xl font-bold glow-text tracking-tighter">
-                    SHOUROV<span class="text-white">BOT</span>
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="status-dot"></div>
+                    <span class="text-xs font-bold tracking-widest text-emerald-400 uppercase">System Active</span>
+                </div>
+                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tighter text-white">
+                    MAHABUB<span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500">-BOT</span>
                 </h1>
-                <p class="text-slate-400 font-light mt-1 uppercase tracking-widest text-xs">// Secure Appstate Encryptor</p>
             </div>
-            <a href="/" class="btn-cyber px-8 py-3 rounded-md font-bold text-sm mt-4 md:mt-0">
-                Dashboard
-            </a>
+            <div class="flex gap-4 mt-6 md:mt-0">
+                <a href="/appstate" class="btn-neon px-6 py-3 rounded-xl font-bold text-sm">🔑 APPSTATE</a>
+                <button onclick="restartBot()" class="btn-neon btn-danger-neon px-6 py-3 rounded-xl font-bold text-sm">🔄 RESTART</button>
+            </div>
         </header>
 
-        <div class="grid lg:grid-cols-3 gap-8">
-            <div class="lg:col-span-2">
-                <main class="neon-card rounded-3xl p-8">
-                    <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
-                        <span id="status-light" class="w-3 h-3 bg-cyan-400 rounded-full"></span>
-                        JSON Configuration
-                    </h2>
-                    
-                    <textarea 
-                        id="appstate" 
-                        class="w-full rounded-xl p-6 font-mono text-sm mb-6 transition-all duration-300" 
-                        rows="12"
-                        placeholder='[{"key": "value"}]'
-                    ></textarea>
-
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <button id="saveBtn" onclick="saveSession()" class="btn-cyber flex-1 py-4 rounded-xl font-black">
-                            Save to Mainframe
-                        </button>
-                        <button onclick="formatJSON()" class="btn-cyber btn-cyber-purple px-8 py-4 rounded-xl font-black">
-                            Format
-                        </button>
-                    </div>
-                </main>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="glass-card stat-card p-6">
+                <div class="flex justify-between items-center mb-4 text-slate-400">
+                    <span class="text-xs font-bold uppercase tracking-widest">CPU Load</span>
+                    <span class="text-xl">💻</span>
+                </div>
+                <div class="text-3xl font-black jetbrains mb-4" id="cpu">0%</div>
+                <div class="progress-bar">
+                    <div id="cpu-bar" class="progress-fill bg-cyan-400" style="width: 0%"></div>
+                </div>
             </div>
 
-            <aside class="space-y-6">
-                <div class="neon-card rounded-3xl p-6">
-                    <h3 class="text-xl font-bold mb-6 text-white/90 uppercase tracking-tighter">Guide</h3>
-                    <div class="space-y-4">
-                        <div class="step-item p-4">
-                            <span class="text-xs text-cyan-400 font-bold block">01. EXTRACT</span>
-                            <p class="text-sm text-slate-300">Copy JSON from your Cookie Extension.</p>
-                        </div>
-                        <div class="step-item p-4">
-                            <span class="text-xs text-purple-400 font-bold block">02. PASTE & FORMAT</span>
-                            <p class="text-sm text-slate-300">Paste it here and click 'Format' to verify.</p>
-                        </div>
-                        <div class="step-item p-4">
-                            <span class="text-xs text-green-400 font-bold block">03. DEPLOY</span>
-                            <p class="text-sm text-slate-300">Save and restart your bot from Dashboard.</p>
-                        </div>
-                    </div>
+            <div class="glass-card stat-card p-6">
+                <div class="flex justify-between items-center mb-4 text-slate-400">
+                    <span class="text-xs font-bold uppercase tracking-widest">Memory</span>
+                    <span class="text-xl">🧠</span>
                 </div>
+                <div class="text-3xl font-black jetbrains mb-4" id="memory">0 MB</div>
+                <div class="progress-bar">
+                    <div id="memory-bar" class="progress-fill bg-purple-500" style="width: 0%"></div>
+                </div>
+            </div>
 
-                <div class="neon-card rounded-3xl p-6 border-t-4 border-cyan-500">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-slate-400 uppercase">Integrity Check</span>
-                        <span id="integrity-text" class="text-xs font-bold text-cyan-400">WAITING</span>
+            <div class="glass-card stat-card p-6">
+                <div class="flex justify-between items-center mb-4 text-slate-400">
+                    <span class="text-xs font-bold uppercase tracking-widest">Uptime</span>
+                    <span class="text-xl">⏱️</span>
+                </div>
+                <div class="text-3xl font-black jetbrains mb-4" id="uptime">0h 0m</div>
+                <div class="text-[10px] text-emerald-400 font-bold uppercase">Stable Connection</div>
+            </div>
+
+            <div class="glass-card stat-card p-6">
+                <div class="flex justify-between items-center mb-4 text-slate-400">
+                    <span class="text-xs font-bold uppercase tracking-widest">Core Status</span>
+                    <span class="text-xl">📡</span>
+                </div>
+                <div class="text-3xl font-black jetbrains text-emerald-400 mb-4">ONLINE</div>
+                <div class="text-[10px] text-slate-500 font-bold uppercase">Region: Global-Alpha</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 glass-card p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-cyan-400">📊</span> System Specs
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 border-b border-white/5 flex justify-between group hover:bg-white/5 transition-all">
+                        <span class="text-slate-400">Platform</span>
+                        <span id="platform" class="font-bold jetbrains">Loading...</span>
                     </div>
-                    <div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                        <div id="progress-bar" class="h-full bg-cyan-500 w-0 transition-all duration-500"></div>
+                    <div class="p-4 border-b border-white/5 flex justify-between group hover:bg-white/5 transition-all">
+                        <span class="text-slate-400">Node</span>
+                        <span id="nodeVersion" class="font-bold jetbrains">Loading...</span>
+                    </div>
+                    <div class="p-4 border-b border-white/5 flex justify-between group hover:bg-white/5 transition-all">
+                        <span class="text-slate-400">Arch</span>
+                        <span id="arch" class="font-bold jetbrains">Loading...</span>
+                    </div>
+                    <div class="p-4 border-b border-white/5 flex justify-between group hover:bg-white/5 transition-all">
+                        <span class="text-slate-400">Cores</span>
+                        <span id="cpuCores" class="font-bold jetbrains">Loading...</span>
                     </div>
                 </div>
-            </aside>
+            </div>
+
+            <div class="glass-card p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                    <span class="text-purple-400">⚙️</span> Control
+                </h2>
+                <div class="space-y-3">
+                    <button onclick="refreshStats()" class="w-full btn-neon p-4 rounded-xl text-left flex justify-between group">
+                        <span>Sync Data</span>
+                        <span class="opacity-0 group-hover:opacity-100 transition-all">↺</span>
+                    </button>
+                    <button onclick="viewLogs()" class="w-full btn-neon p-4 rounded-xl text-left flex justify-between group">
+                        <span>Main Logs</span>
+                        <span class="opacity-0 group-hover:opacity-100 transition-all">📖</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const appstateInput = document.getElementById('appstate');
-        const saveBtn = document.getElementById('saveBtn');
-        const statusLight = document.getElementById('status-light');
-        const integrityText = document.getElementById('integrity-text');
-        const progressBar = document.getElementById('progress-bar');
-
-        // Verify JSON while typing
-        appstateInput.addEventListener('input', () => {
-            try {
-                if(appstateInput.value.trim() === "") throw "empty";
-                JSON.parse(appstateInput.value);
-                statusLight.className = "w-3 h-3 bg-green-500 shadow-[0_0_10px_#39ff14]";
-                integrityText.innerText = "VALIDATED";
-                progressBar.style.width = "100%";
-            } catch(e) {
-                statusLight.className = "w-3 h-3 bg-red-500 shadow-[0_0_10px_#ff0000]";
-                integrityText.innerText = "INVALID";
-                progressBar.style.width = "30%";
-            }
+        // Mouse Tracking Logic
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.onmousemove = e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty("--x", `${x}px`);
+                card.style.setProperty("--y", `${y}px`);
+            };
         });
 
-        function formatJSON() {
+        // Backend Integration
+        async function refreshStats() {
             try {
-                const rawValue = appstateInput.value;
-                const obj = JSON.parse(rawValue);
-                appstateInput.value = JSON.stringify(obj, null, 4);
-                alert("✨ Matrix Refactor Complete: JSON Formatted!");
-            } catch(e) {
-                alert("❌ Syntax Error: Check your JSON structure!");
-            }
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                document.getElementById('cpu').innerText = data.cpu + '%';
+                document.getElementById('cpu-bar').style.width = data.cpu + '%';
+                
+                document.getElementById('memory').innerText = data.memoryUsed + ' MB';
+                document.getElementById('memory-bar').style.width = (data.memoryUsed / data.memoryTotal * 100) + '%';
+                
+                document.getElementById('uptime').innerText = data.uptime;
+                document.getElementById('platform').innerText = data.platform;
+                document.getElementById('nodeVersion').innerText = data.nodeVersion;
+                document.getElementById('arch').innerText = data.arch;
+                document.getElementById('cpuCores').innerText = data.cpuCores;
+            } catch (e) { console.log("System Sync Error"); }
         }
 
-        async function saveSession() {
-            const data = appstateInput.value.trim();
-
-            if (!data) {
-                alert("Empty Data! Paste your appstate first.");
-                return;
-            }
-
-            try {
-                // Pre-validation
-                JSON.parse(data);
-
-                // UI Loading State
-                saveBtn.disabled = true;
-                const originalText = saveBtn.innerText;
-                saveBtn.innerText = "ENCRYPTING & SAVING...";
-
-                // API CALL
-                const response = await fetch('/api/appstate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ appstate: data })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert("✅ SUCCESS: Appstate updated in the cloud!");
-                    // Optional: redirect to dashboard
-                    // window.location.href = "/";
-                } else {
-                    alert("❌ SERVER ERROR: " + (result.message || "Failed to save"));
-                }
-
-                saveBtn.disabled = false;
-                saveBtn.innerText = originalText;
-
-            } catch (e) {
-                alert("❌ VALIDATION ERROR: Please format/fix JSON before saving.");
-                saveBtn.disabled = false;
-            }
-        }
+        setInterval(refreshStats, 3000);
+        refreshStats();
     </script>
 </body>
-    </html>
+</html>
