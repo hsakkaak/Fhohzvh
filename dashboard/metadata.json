@@ -1,8 +1,0 @@
-{
-  "name": "SHOUROV BOT CONTROL DASHBOARD",
-  "description": "A professional, secure, owner-branded web control panel for managing the Alihsan Shourov Facebook Messenger bot with PM2 integration and real-time logs.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}
