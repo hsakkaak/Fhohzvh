@@ -8,11 +8,24 @@ const google = require("googleapis").google;
 const nodemailer = require("nodemailer");
 const express = require("express");
 const app = express();
+
 // Replit deployment er jonno port fix
 const port = process.env.PORT || 7177; 
 const { execSync } = require('child_process');
 const log = require('./logger/log.js');
 
+const session = require("express-session");
+
+app.use(session({
+  secret: "shourov-secret-key",
+  resave: false,
+  saveUninitialized: false
+}));
+
+function requireLogin(req, res, next) {
+  if (req.session?.loggedIn) return next();
+  return res.redirect("/login.html");
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
