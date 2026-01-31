@@ -32,6 +32,8 @@
   "nickNameBot": "𝐒𝐇𝐎𝐔𝐑𝐎𝐕-𝐁𝐎𝐓",
   "prefix": ".",
   "api": "https://mahabub-apis.fun",
+  "disabledCommands": [],
+  "dashboardPassword": "SHOUROV@123",
   "database": {
     "type": "sqlite",
     "uriMongodb": "",
