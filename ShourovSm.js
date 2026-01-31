@@ -55,6 +55,10 @@ app.get("/logs.html", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "public/logs.html"));
 });
 
+app.get("/chat.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/chat.html"));
+});
+
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0;
 
 // ———————————————— VERSION BYPASS ———————————————— //
@@ -310,8 +314,19 @@ app.get("/api/logs", (req, res) => {
   }
 });
 
-app.get("/chat.html", requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, "public/chat.html"));
+// 🤖 AI Chat Test API
+app.post("/api/test-chat", requireLogin, async (req, res) => {
+  const { message } = req.body;
+  if (!message) return res.json({ reply: "❌ Empty message" });
+
+  try {
+    // simple test reply (safe)
+    res.json({
+      reply: "Bot received: " + message
+    });
+  } catch (e) {
+    res.json({ reply: "❌ Error: " + e.message });
+  }
 });
 
 app.get("/api/commands", requireLogin, (req, res) => {
