@@ -9,51 +9,71 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 body{
+  margin:0;
   font-family:'Orbitron',sans-serif;
-  background:#030712;
+  background:#000;
   color:white;
   overflow-x:hidden;
 }
 
-.neon{ box-shadow:0 0 20px currentColor; }
+/* 🔥 Animated Background */
+.animated-bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:linear-gradient(120deg,#00ffff,#7f00ff,#ff0080,#00ff9d);
+  background-size:400% 400%;
+  animation:neonMove 18s ease infinite;
+  filter:blur(45px);
+  opacity:.35;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  z-index:-1;
+}
+
+@keyframes neonMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
 
 .card{
-  background:rgba(255,255,255,.04);
-  backdrop-filter:blur(15px);
-  border:1px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(14px);
   border-radius:22px;
+  border:1px solid rgba(255,255,255,.1);
   transition:.4s;
 }
-.card:hover{ transform:translateY(-6px) scale(1.02); }
+.card:hover{transform:translateY(-6px) scale(1.03)}
 
+.neon{box-shadow:0 0 20px currentColor}
 .glow-blue{color:#00f2ff}
 .glow-pink{color:#ff007a}
 .glow-purple{color:#9d00ff}
 .glow-green{color:#22c55e}
 .glow-yellow{color:#facc15}
 
-.typing::after{
-  content:'|';
-  animation:blink 1s infinite;
-}
-@keyframes blink{50%{opacity:0}}
-
 video{border-radius:18px;cursor:pointer}
 </style>
 </head>
 
 <body class="p-6">
+<div class="animated-bg"></div>
 
-<!-- 🔊 Sounds -->
 <audio id="hoverSound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
 <audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2691/2691-preview.mp3"></audio>
 
 <div class="max-w-7xl mx-auto space-y-8">
 
-<!-- 👤 PROFILE -->
+<!-- PROFILE -->
 <div class="card p-6 flex flex-col md:flex-row gap-6 items-center">
   <video id="coverVideo" width="260" muted loop>
     <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4">
@@ -61,7 +81,7 @@ video{border-radius:18px;cursor:pointer}
 
   <div class="flex-1">
     <h1 class="text-4xl font-bold glow-blue neon">SHOUROV BOT</h1>
-    <p class="text-sm text-gray-400 mt-1 typing">Developer • ALIHSAN SHOUROV • AI Bot</p>
+    <p class="text-sm text-gray-400">Developer • ALIHSAN SHOUROV • AI Bot</p>
 
     <div class="flex gap-4 mt-4 text-2xl">
       <a href="https://www.facebook.com/shourov.sm24" target="_blank">
@@ -79,45 +99,21 @@ video{border-radius:18px;cursor:pointer}
   </div>
 </div>
 
-<!-- 🔔 OPTION A -->
-<div class="card p-4 glow-purple neon text-center">
-  <i class="fa-solid fa-envelope mr-2"></i>
-  For business inquiries or technical support, inbox me.
+<!-- INFO -->
+<div class="card p-4 text-center glow-purple neon">
+  📩 For business inquiries or technical support, inbox me.
 </div>
 
-<!-- 🔧 OPTION B -->
-<div class="card p-4 glow-blue neon text-center">
-  <i class="fa-solid fa-gear mr-2"></i>
-  Offering bot setup, automation support & custom dashboards.
+<div class="card p-4 text-center glow-blue neon">
+  ⚙️ Offering bot setup, automation support & custom dashboards.
 </div>
 
-<!-- 📊 STATS -->
+<!-- STATS -->
 <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
-  <div class="card p-5 text-center glow-blue neon">
-    <div>Groups</div>
-    <div id="groups" class="text-3xl">0</div>
-  </div>
-  <div class="card p-5 text-center glow-purple neon">
-    <div>Users</div>
-    <div id="users" class="text-3xl">0</div>
-  </div>
-  <div class="card p-5 text-center glow-green neon">
-    <div>Commands</div>
-    <div id="commands" class="text-3xl">0</div>
-  </div>
-  <div class="card p-5 text-center glow-pink neon col-span-2">
-    <div>Admins</div>
-    <div id="admins" class="text-xs break-words"></div>
-  </div>
-</div>
-
-<!-- ⚙️ ACTION -->
-<div class="grid md:grid-cols-5 gap-6">
-  <a href="/appstate.html" class="card p-4 text-center glow-blue">🔑 Appstate</a>
-  <a href="/logs.html" class="card p-4 text-center glow-purple">📜 Logs</a>
-  <a href="/control.html" class="card p-4 text-center glow-green">⚙️ Control</a>
-  <a href="/settings.html" class="card p-4 text-center glow-yellow">🛠 Settings</a>
-  <a href="/command.html" class="card p-4 text-center glow-pink">🧩 Commands</a>
+  <div class="card p-5 text-center glow-blue neon"><div>Groups</div><div id="groups" class="text-3xl">0</div></div>
+  <div class="card p-5 text-center glow-purple neon"><div>Users</div><div id="users" class="text-3xl">0</div></div>
+  <div class="card p-5 text-center glow-green neon"><div>Commands</div><div id="commands" class="text-3xl">0</div></div>
+  <div class="card p-5 text-center glow-pink neon col-span-2"><div>Admins</div><div id="admins" class="text-xs break-words"></div></div>
 </div>
 
 </div>
@@ -132,10 +128,7 @@ document.querySelectorAll("a,.card").forEach(el=>{
 });
 
 const video=document.getElementById("coverVideo");
-video.onclick=()=>{
-  video.muted=false;
-  video.play();
-};
+video.onclick=()=>{video.muted=false;video.play();};
 
 async function loadBotInfo(){
   try{
@@ -148,7 +141,6 @@ async function loadBotInfo(){
     bdtime.innerText=d.bdTime;
   }catch(e){}
 }
-
 setInterval(loadBotInfo,1000);
 loadBotInfo();
 </script>
