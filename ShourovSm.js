@@ -310,6 +310,10 @@ app.get("/api/logs", (req, res) => {
   }
 });
 
+app.get("/chat.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/chat.html"));
+});
+
 app.get("/api/commands", requireLogin, (req, res) => {
   const commands = [...global.GoatBot.commands.keys()];
   const disabled = global.GoatBot.config.disabledCommands || [];
