@@ -59,6 +59,7 @@ for (const pathDir of [dirConfig, dirConfigCommands]) {
 		process.exit(0);
 	}
 }
+}
 const config = require(dirConfig);
 if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
 	config.whiteListMode.whiteListIds = config.whiteListMode.whiteListIds.map(id => id.toString());
