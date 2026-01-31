@@ -240,6 +240,10 @@ app.post("/api/command-toggle", requireLogin, (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/appstate.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/appstate.html"));
+});
+
 app.post("/api/login", (req, res) => {
   const { password } = req.body;
   const config = require(dirConfig);
