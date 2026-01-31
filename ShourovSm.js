@@ -214,6 +214,11 @@ global.temp = {
 	require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
 })();
 
+// ✅ Static assets allow (CSS / JS / Images)
+app.use("/js", express.static(path.join(__dirname, "public/js")));
+app.use("/css", express.static(path.join(__dirname, "public/css")));
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
+
 app.post("/api/command-toggle", requireLogin, (req, res) => {
   const { command, enable } = req.body;
 
