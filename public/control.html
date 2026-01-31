@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Control | SHOUROV-BOT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white flex items-center justify-center min-h-screen">
+
+  <div class="bg-black/50 border border-cyan-400/30 p-8 rounded-2xl space-y-6 w-full max-w-md text-center">
+    <h1 class="text-3xl font-bold text-cyan-400">⚙️ Bot Control</h1>
+
+    <button onclick="action('start')" class="w-full py-3 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 rounded-xl">
+      ▶️ START BOT
+    </button>
+
+    <button onclick="action('restart')" class="w-full py-3 bg-yellow-500/20 hover:bg-yellow-500 text-yellow-400 rounded-xl">
+      🔄 RESTART BOT
+    </button>
+
+    <button onclick="action('stop')" class="w-full py-3 bg-red-500/20 hover:bg-red-500 text-red-400 rounded-xl">
+      ⛔ STOP BOT
+    </button>
+
+    <p id="status" class="text-sm text-slate-400"></p>
+  </div>
+
+  <script>
+    async function action(type) {
+      document.getElementById("status").innerText = "Sending command...";
+      const res = await fetch("/api/control", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: type })
+      });
+      const data = await res.json();
+      document.getElementById("status").innerText = data.message;
+    }
+  </script>
+</body>
+</html>
