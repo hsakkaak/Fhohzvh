@@ -262,7 +262,34 @@ app.get("/api/logs", (req, res) => {
   }
 });
 
+app.get("/api/commands", (req, res) => {
+  const commands = [...global.GoatBot.commands.keys()];
+  const disabled = global.GoatBot.config.disabledCommands || [];
 
+  res.json(
+    commands.map(cmd => ({
+      name: cmd,
+      enabled: !disabled.includes(cmd)
+    }))
+  );
+});
+
+app.post("/api/group-command-toggle", async (req, res) => {
+  const { threadID, command, enable } = req.body;
+
+  const thread = global.db.allThreadData.find(t => t.threadID == threadID);
+  if (!thread) return res.status(404).json({ error:"Thread not found" });
+
+  thread.data.disabledCommands ||= [];
+
+  if (!enable)
+    thread.data.disabledCommands.push(command);
+  else
+    thread.data.disabledCommands =
+      thread.data.disabledCommands.filter(c=>c!==command);
+
+  res.json({ success:true });
+});
 
 app.post("/api/settings", (req, res) => {
   const { key, value } = req.body;
