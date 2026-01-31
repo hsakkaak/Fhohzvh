@@ -165,6 +165,7 @@ global.temp = {
 		console.warn("Mail system failed to init, but skipping to prevent crash.");
 	}
 
+
 	// CHECK VERSION (Bypassed by Force version above)
 	console.log(colors.cyan("[ SYSTEM ] Checking Version & Integrity..."));
 
@@ -175,7 +176,18 @@ global.temp = {
 	require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
 })();
 
+app.post("/api/command-toggle", (req, res) => {
+  const { command, enable } = req.body;
 
+  if (!global.GoatBot.commands.has(command))
+    return res.json({ error: "Command not found" });
+
+  if (!enable) {
+    global.GoatBot.commands.delete(command);
+  }
+
+  res.json({ success: true });
+});
 
 app.get("/api/stats", (req, res) => {
 	const os = require('os');
@@ -254,6 +266,40 @@ app.get("/api/botinfo", (req, res) => {
     users: userCount,
     admins: adminList || "Not Set",
     commands: commandCount,
+    bdTime
+  });
+});
+
+app.post("/api/settings", (req, res) => {
+  const { key, value } = req.body;
+
+  try {
+    const configPath = path.join(__dirname, "config.json");
+    const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+
+    config[key] = value;
+
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: "Failed to update setting" });
+  }
+});
+app.get("/api/botinfo", (req, res) => {
+  const groups = global.db.allThreadData?.length || 0;
+  const users = global.db.allUserData?.length || 0;
+  const commands = global.GoatBot.commands.size || 0;
+  const admins = (global.GoatBot.config.adminBot || []).join(", ");
+
+  const bdTime = new Date().toLocaleString("en-BD", {
+    timeZone: "Asia/Dhaka"
+  });
+
+  res.json({
+    groups,
+    users,
+    commands,
+    admins,
     bdTime
   });
 });
