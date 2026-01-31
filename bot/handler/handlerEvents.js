@@ -273,6 +273,18 @@ if (global.GoatBot.config.disabledCommands?.includes(commandName)) {
   );
 }
 
+app.get("/api/commands", (req, res) => {
+  const commands = [...global.GoatBot.commands.keys()];
+  const disabled = global.GoatBot.config.disabledCommands || [];
+
+  res.json(
+    commands.map(cmd => ({
+      name: cmd,
+      enabled: !disabled.includes(cmd)
+    }))
+  );
+});
+
 			// ✅ Permission / Role check
 			const roleConfig = getRoleConfig(utils, command, isGroup, threadData, commandName);
 			const needRole = roleConfig.onStart;
