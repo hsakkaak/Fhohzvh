@@ -274,21 +274,30 @@ app.get("/api/commands", (req, res) => {
   );
 });
 
-app.post("/api/group-command-toggle", async (req, res) => {
-  const { threadID, command, enable } = req.body;
+app.post("/api/command-toggle", (req, res) => {
+  const { command, enable, uid } = req.body;
 
-  const thread = global.db.allThreadData.find(t => t.threadID == threadID);
-  if (!thread) return res.status(404).json({ error:"Thread not found" });
+  const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
 
-  thread.data.disabledCommands ||= [];
+  // 🔒 OWNER CHECK
+  if (uid !== config.dashboardOwner) {
+    return res.status(403).json({
+      error: "Only SHOUROV can use this feature"
+    });
+  }
 
-  if (!enable)
-    thread.data.disabledCommands.push(command);
-  else
-    thread.data.disabledCommands =
-      thread.data.disabledCommands.filter(c=>c!==command);
+  config.disabledCommands ||= [];
 
-  res.json({ success:true });
+  if (!enable) {
+    if (!config.disabledCommands.includes(command))
+      config.disabledCommands.push(command);
+  } else {
+    config.disabledCommands =
+      config.disabledCommands.filter(c => c !== command);
+  }
+
+  fs.writeFileSync("config.json", JSON.stringify(config, null, 2));
+  res.json({ success: true });
 });
 
 app.post("/api/settings", (req, res) => {
