@@ -28,8 +28,31 @@ function requireLogin(req, res, next) {
 }
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// login page (open)
 app.get("/login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "public/login.html"));
+});
+
+// dashboard (protected)
+app.get("/", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+// protected pages
+app.get("/command.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/command.html"));
+});
+
+app.get("/settings.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/settings.html"));
+});
+
+app.get("/control.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/control.html"));
+});
+
+app.get("/logs.html", requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, "public/logs.html"));
 });
 
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0;
