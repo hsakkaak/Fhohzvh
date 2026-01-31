@@ -231,6 +231,33 @@ app.get("/api/logs", (req, res) => {
   }
 });
 
+app.get("/api/botinfo", (req, res) => {
+  const os = require("os");
+
+  const groupCount = global.db?.allThreadData?.length || 0;
+  const userCount = global.db?.allUserData?.length || 0;
+
+  const adminList = (config.adminBot || []).join(", ");
+  const commandCount = global.GoatBot?.commands?.size || 0;
+
+  // BD Time
+  const bdTime = new Date().toLocaleString("en-US", {
+    timeZone: "Asia/Dhaka",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
+
+  res.json({
+    groups: groupCount,
+    users: userCount,
+    admins: adminList || "Not Set",
+    commands: commandCount,
+    bdTime
+  });
+});
+
 // Port listening for Replit Health Check
 app.listen(port, "0.0.0.0", () => {
 	console.log(`[ SERVER ] Active on port ${port}. Health check passed.`);
