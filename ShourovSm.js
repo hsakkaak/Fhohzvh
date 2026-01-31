@@ -197,6 +197,17 @@ app.post("/api/command-toggle", (req, res) => {
   res.json({ success: true });
 });
 
+app.post("/api/login", (req, res) => {
+  const { password } = req.body;
+  const config = require("./config.json");
+
+  if (password === config.dashboardAuth.password) {
+    res.json({ success: true });
+  } else {
+    res.status(401).json({ error: "Invalid password" });
+  }
+});
+
 app.get("/api/stats", (req, res) => {
 	const os = require('os');
 	const uptime = process.uptime();
