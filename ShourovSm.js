@@ -18,10 +18,6 @@ const session = require("express-session");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// login page (open)
-app.get("/login.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/login.html"));
-});
 
 // dashboard (protected)
 app.get("/", requireLogin, (req, res) => {
@@ -236,18 +232,6 @@ app.post("/api/command-toggle", requireLogin, (req, res) => {
 
 app.get("/appstate.html", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "public/appstate.html"));
-});
-
-app.post("/api/login", (req, res) => {
-  const { password } = req.body;
-  const config = require(dirConfig);
-
-  if (password === config.dashboardPassword) {
-    req.session.loggedIn = true;
-    return res.json({ success: true });
-  }
-
-  res.status(401).json({ error: "Wrong password" });
 });
 
 app.get("/api/stats", (req, res) => {
