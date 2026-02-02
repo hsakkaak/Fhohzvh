@@ -102,7 +102,7 @@ module.exports = {
 
       return api.sendMessage(
         {
-          body: "✅ 𝙎𝙪𝙘𝙘𝙚𝙨𝙨𝙛𝙪𝙡𝙡𝙮 𝙃𝙖𝙘𝙠𝙚𝙙 𝙏𝙝𝙞𝙨 𝙐𝙨𝙚𝙧!\nMy Lord, আইড়ি বাঁচাতে চাইলে Alihsan Shourov বসকে তাড়াতাড়ি ইনবক্স দে!",
+          body: "✅ 𝙎𝙪𝙘𝙘𝙚𝙨𝙨𝙛𝙪𝙡𝙡𝙮 𝙃𝙖𝙘𝙠𝙚𝙙 𝙏𝙝𝙞𝙨 𝙐𝙨𝙚𝙧!\nMy Lord, আইড়ি বাঁচাতে চাইলে ALihsan Shourov বসকে তাড়াতাড়ি ইনবক্স দে!",
           attachment: fs.createReadStream(pathImg),
         },
         event.threadID,
