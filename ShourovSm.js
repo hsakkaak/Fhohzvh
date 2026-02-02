@@ -303,31 +303,6 @@ app.post("/api/test-chat", requireLogin, async (req, res) => {
   }
 });
 
-app.get("/api/commands", requireLogin, (req, res) => {
-  const commands = [...global.GoatBot.commands.keys()];
-  const disabled = global.GoatBot.config.disabledCommands || [];
-
-  res.json(
-    commands.map(cmd => ({
-      name: cmd,
-      enabled: !disabled.includes(cmd)
-    }))
-  );
-});
-
-  
-app.post("/api/settings", requireLogin, (req, res) => {
-  const { key, value } = req.body;
-
-  const configPath = path.join(__dirname, "config.json");
-  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-
-  config[key] = value;
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-  res.json({ success: true });
-});
-
 app.get("/api/botinfo", (req, res) => {
   const groups = global.db.allThreadData?.length || 0;
   const users = global.db.allUserData?.length || 0;
