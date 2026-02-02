@@ -42,16 +42,6 @@ app.get("/chat.html", requireLogin, (req, res) => {
 
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0;
 
-// ———————————————— VERSION BYPASS ———————————————— //
-// Fake version error fix korar jonno amra package.json er version GitHub er sathe force-match korbo
-const pkgPath = path.join(__dirname, 'package.json');
-if (fs.existsSync(pkgPath)) {
-		const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-		// Bot jeno crash na kore tai amra ekti valid version set kore rakhbo
-		pkg.version = "2.1.0"; 
-		fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
-}
-
 function validJSON(pathDir) {
 	try {
 		if (!fs.existsSync(pathDir))
