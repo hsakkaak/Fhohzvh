@@ -14,8 +14,6 @@ const port = process.env.PORT || 7177;
 const { execSync } = require('child_process');
 const log = require('./logger/log.js');
 
-const session = require("express-session");
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
