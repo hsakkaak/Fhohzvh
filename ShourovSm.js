@@ -19,11 +19,6 @@ const session = require("express-session");
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// dashboard (protected)
-app.get("/", requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
-
 // protected pages
 app.get("/command.html", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "public/command.html"));
