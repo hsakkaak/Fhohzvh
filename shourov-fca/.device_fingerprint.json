@@ -1,0 +1,20 @@
+{
+  "deviceId": "464bbb932d415ee9242ada61d6956614",
+  "clientId": "daad027a860a8d3624532feed7a8f321",
+  "machineId": "4966d567-d19d-396c-dbba-95c839f3c365",
+  "sessionId": "1762348741878-9e1e65eba52434ec",
+  "createdAt": 1762348741876,
+  "lastUsed": 1762348741907,
+  "browser": {
+    "name": "Chrome",
+    "version": "124.0.35"
+  },
+  "screen": {
+    "width": 1440,
+    "height": 900,
+    "colorDepth": 24
+  },
+  "timezone": "UTC",
+  "language": "en-US",
+  "platform": "Linux x86_64"
+}
