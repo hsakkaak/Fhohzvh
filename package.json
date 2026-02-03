@@ -53,9 +53,9 @@
     "websocket-stream": "^5.5.2"
   },
   "scripts": {
-  "start": "node ShourovSm.js",
-  "dev": "node ShourovSm.js",
-  "prod": "node ShourovSm.js"
+  "start": "node shourov.js",
+  "dev": "node shourov.js",
+  "prod": "node shourov.js"
   },
   "author": "NTKhang",
   "license": "MIT",
