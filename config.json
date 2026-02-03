@@ -33,7 +33,6 @@
   "prefix": ".",
   "api": "https://mahabub-apis.fun",
   "disabledCommands": [],
-  "dashboardPassword": "247898",
   "database": {
     "type": "sqlite",
     "uriMongodb": "",
