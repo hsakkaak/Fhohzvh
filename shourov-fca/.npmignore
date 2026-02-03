@@ -1,0 +1,10 @@
+.replit
+replit.nix
+replit.md
+.gitignore
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
