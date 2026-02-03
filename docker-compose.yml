@@ -17,9 +17,7 @@ services:
 
     volumes:
       - ./config.json:/app/config.json
-      - ./config.dev.json:/app/config.dev.json
       - ./Shourov.txt:/app/Shourov.txt:rw
-      - ./Shourov.dev.txt:/app/Shourov.dev.txt:rw
       - goat-db:/app/Fca_Database
 
     healthcheck:
