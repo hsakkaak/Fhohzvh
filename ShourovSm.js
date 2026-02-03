@@ -9,6 +9,9 @@ const nodemailer = require("nodemailer");
 const express = require("express");
 const app = express();
 
+console.log("CMD PATH:", path.join(process.cwd(), "scripts/cmds"));
+console.log("EVENT PATH:", path.join(process.cwd(), "scripts/events"));
+
 // Replit deployment er jonno port fix
 const port = process.env.PORT || 7177; 
 const { execSync } = require('child_process');
