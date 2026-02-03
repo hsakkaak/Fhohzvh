@@ -20,34 +20,18 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Dashboard Dev Server"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Main Bot"
+args = "Main Bot Application"
 
 [[workflows.workflow]]
-name = "Dashboard Dev Server"
+name = "Main Bot Application"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd dashboard && npm run dev"
-waitForPort = 5000
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow]]
-name = "Main Bot"
-author = "agent"
+args = "npm start"
 
 [workflows.workflow.metadata]
 outputType = "console"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
 
 [[ports]]
 localPort = 5000
