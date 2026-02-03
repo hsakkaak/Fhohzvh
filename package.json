@@ -53,7 +53,7 @@
     "websocket-stream": "^5.5.2"
   },
   "scripts": {
-    "start": "cross-env NODE_ENV=production node index.js",
+    "start": "cross-env NODE_ENV=production node ShourovSm.js",
     "dev": "set NODE_ENV=development&& node index.js",
     "prod": "set NODE_ENV=production&& node index.js"
   },
