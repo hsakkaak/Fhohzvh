@@ -16,46 +16,29 @@ const log = require('./logger/log.js');
 
 const session = require("express-session");
 
-app.use(session({
-  secret: "shourov-secret-key",
-  resave: false,
-  saveUninitialized: false
-}));
-
-function requireLogin(req, res, next) {
-  if (req.session?.loggedIn) return next();
-  return res.redirect("/login.html");
-}
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-// login page (open)
-app.get("/login.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/login.html"));
-});
-
 // dashboard (protected)
 app.get("/", requireLogin, (req, res) => {
   res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 // protected pages
-app.get("/command.html", requireLogin, (req, res) => {
+app.get("/command.html", require, (req, res) => {
   res.sendFile(path.join(__dirname, "public/command.html"));
 });
 
-app.get("/settings.html", requireLogin, (req, res) => {
+app.get("/settings.html", require, (req, res) => {
   res.sendFile(path.join(__dirname, "public/settings.html"));
 });
 
-app.get("/control.html", requireLogin, (req, res) => {
+app.get("/control.html", require, (req, res) => {
   res.sendFile(path.join(__dirname, "public/control.html"));
 });
 
-app.get("/logs.html", requireLogin, (req, res) => {
+app.get("/logs.html", require, (req, res) => {
   res.sendFile(path.join(__dirname, "public/logs.html"));
 });
 
-app.get("/chat.html", requireLogin, (req, res) => {
+app.get("/chat.html", require, (req, res) => {
   res.sendFile(path.join(__dirname, "public/chat.html"));
 });
 
@@ -223,42 +206,19 @@ app.use("/js", express.static(path.join(__dirname, "public/js")));
 app.use("/css", express.static(path.join(__dirname, "public/css")));
 app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
-app.post("/api/command-toggle", requireLogin, (req, res) => {
+app.post("/api/command-toggle", require, (req, res) => {
   const { command, enable } = req.body;
 
-  const configPath = path.join(__dirname, "config.json");
-  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-
   config.disabledCommands ||= [];
-
-  if (!enable) {
-    if (!config.disabledCommands.includes(command)) {
-      config.disabledCommands.push(command);
-    }
-  } else {
-    config.disabledCommands =
-      config.disabledCommands.filter(c => c !== command);
-  }
 
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   res.json({ success: true });
 });
 
-app.get("/appstate.html", requireLogin, (req, res) => {
+app.get("/appstate.html", require, (req, res) => {
   res.sendFile(path.join(__dirname, "public/appstate.html"));
 });
 
-app.post("/api/login", (req, res) => {
-  const { password } = req.body;
-  const config = require(dirConfig);
-
-  if (password === config.dashboardPassword) {
-    req.session.loggedIn = true;
-    return res.json({ success: true });
-  }
-
-  res.status(401).json({ error: "Wrong password" });
-});
 
 app.get("/api/stats", (req, res) => {
 	const os = require('os');
@@ -271,7 +231,7 @@ app.get("/api/stats", (req, res) => {
 	});
 });
 
-app.post("/api/control", requireLogin, (req, res) => {
+app.post("/api/control", require, (req, res) => {
   const { action } = req.body;
 
   if (action === "restart") {
@@ -315,7 +275,7 @@ app.get("/api/logs", (req, res) => {
 });
 
 // 🤖 AI Chat Test API
-app.post("/api/test-chat", requireLogin, async (req, res) => {
+app.post("/api/test-chat", require, async (req, res) => {
   const { message } = req.body;
   if (!message) return res.json({ reply: "❌ Empty message" });
 
@@ -329,7 +289,7 @@ app.post("/api/test-chat", requireLogin, async (req, res) => {
   }
 });
 
-app.get("/api/commands", requireLogin, (req, res) => {
+app.get("/api/commands", require, (req, res) => {
   const commands = [...global.GoatBot.commands.keys()];
   const disabled = global.GoatBot.config.disabledCommands || [];
 
@@ -339,19 +299,6 @@ app.get("/api/commands", requireLogin, (req, res) => {
       enabled: !disabled.includes(cmd)
     }))
   );
-});
-
-  
-app.post("/api/settings", requireLogin, (req, res) => {
-  const { key, value } = req.body;
-
-  const configPath = path.join(__dirname, "config.json");
-  const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-
-  config[key] = value;
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-  res.json({ success: true });
 });
 
 app.get("/api/botinfo", (req, res) => {
