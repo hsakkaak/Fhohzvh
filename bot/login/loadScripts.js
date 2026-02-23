@@ -1,239 +1,227 @@
-const {
-  readdirSync,
-  readFileSync,
-  writeFileSync,
-  existsSync
-} = require("fs-extra");
+const { readdirSync, readFileSync, writeFileSync, existsSync } = require("fs-extra");
 const path = require("path");
-const exec = (_0x3e5d30, _0x2d2e06) => new Promise((_0x2ec7b0, _0x320ff6) => {
-  require("child_process").exec(_0x3e5d30, _0x2d2e06, (_0xdcff60, _0x68e42f) => {
-    if (_0xdcff60) {
-      return _0x320ff6(_0xdcff60);
-    }
-    _0x2ec7b0(_0x68e42f);
-  });
+const exec = (cmd, options) => new Promise((resolve, reject) => {
+	require("child_process").exec(cmd, options, (err, stdout) => {
+		if (err)
+			return reject(err);
+		resolve(stdout);
+	});
 });
-const {
-  log,
-  loading,
-  getText,
-  colors,
-  removeHomeDir
-} = global.utils;
-const {
-  GoatBot
-} = global;
-const {
-  configCommands
-} = GoatBot;
+const { log, loading, getText, colors, removeHomeDir } = global.utils;
+const { GoatBot } = global;
+const { configCommands } = GoatBot;
 const regExpCheckPackage = /require(\s+|)\((\s+|)[`'"]([^`'"]+)[`'"](\s+|)\)/g;
 const packageAlready = [];
-const spinner = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+// const spinner = '\\|/-';
+const spinner = [
+	'⠋', '⠙', '⠹',
+	'⠸', '⠼', '⠴',
+	'⠦', '⠧', '⠇',
+	'⠏'
+];
 let count = 0;
-module.exports = async function (_0x423297, _0xce5d8c, _0x543fe1, _0x40a3c5, _0x2ee1a4, _0x8c6cf0, _0xed1903, _0x4ee66f, _0x12fdad, _0x3d33a0) {
-  const _0x459c96 = await _0x12fdad.get("setalias", "data", []);
-  if (_0x459c96) {
-    for (const _0x5d1c86 of _0x459c96) {
-      const {
-        aliases: _0xf54298,
-        commandName: _0x2cabd8
-      } = _0x5d1c86;
-      for (const _0x455db4 of _0xf54298) if (GoatBot.aliases.has(_0x455db4)) {
-        throw new Error("Alias \"" + _0x455db4 + "\" already exists in command \"" + _0x2cabd8 + "\"");
-      } else {
-        GoatBot.aliases.set(_0x455db4, _0x2cabd8);
-      }
-    }
-  }
-  const _0x8d8a9b = ["cmds", "events"];
-  let _0x2b5a43;
-  let _0x15552a;
-  let _0x15df96;
-  for (const _0x50f23c of _0x8d8a9b) {
-    const _0x5cbdca = _0x50f23c == "cmds" ? _0x3d33a0("SHOUROV-BOT.. LOAD COMMANDS") : _0x3d33a0("SHOUROV-BOT.. COMMANDS EVENT");
-    console.log(colors.hex("#f5ab00")(_0x5cbdca));
-    if (_0x50f23c == "cmds") {
-      _0x2b5a43 = "command";
-      _0x15df96 = "envCommands";
-      _0x15552a = "commands";
-    } else if (_0x50f23c == "events") {
-      _0x2b5a43 = "event command";
-      _0x15df96 = "envEvents";
-      _0x15552a = "eventCommands";
-    }
-    const _0x1c21fe = path.normalize(process.cwd() + ("/scripts/" + _0x50f23c));
-    const _0x384f2d = readdirSync(_0x1c21fe).filter(_0x33580f => _0x33580f.endsWith(".js") && !_0x33580f.endsWith("eg.js") && (process.env.NODE_ENV == "development" ? true : !_0x33580f.match(/(dev)\.js$/g)) && !configCommands[_0x50f23c == "cmds" ? "commandUnload" : "commandEventUnload"]?.["includes"](_0x33580f));
-    const _0x43777d = [];
-    let _0x41c646 = 0;
-    for (const _0x2673d8 of _0x384f2d) {
-      const _0x28fcc0 = path.normalize(_0x1c21fe + '/' + _0x2673d8);
-      try {
-        const _0x4f08bf = readFileSync(_0x28fcc0, "utf8");
-        let _0x5ba544 = _0x4f08bf.match(regExpCheckPackage);
-        if (_0x5ba544) {
-          _0x5ba544 = _0x5ba544.map(_0x1494b2 => _0x1494b2.match(/[`'"]([^`'"]+)[`'"]/)[1]).filter(_0x3901b4 => _0x3901b4.indexOf('/') !== 0 && _0x3901b4.indexOf('./') !== 0 && _0x3901b4.indexOf("../") !== 0 && _0x3901b4.indexOf(__dirname) !== 0);
-          for (let _0x2cf529 of _0x5ba544) {
-            if (_0x2cf529.startsWith('@')) {
-              _0x2cf529 = _0x2cf529.split('/').slice(0, 2).join('/');
-            } else {
-              _0x2cf529 = _0x2cf529.split('/')[0];
-            }
-            if (!packageAlready.includes(_0x2cf529)) {
-              packageAlready.push(_0x2cf529);
-              if (!existsSync(process.cwd() + "/node_modules/" + _0x2cf529)) {
-                const _0x4d8c99 = setInterval(() => {
-                  loading.info("SHOUROV-BOT.. PACKAGE", spinner[count % spinner.length] + " Installing package " + colors.yellow(_0x2cf529) + " for " + _0x2b5a43 + " " + colors.yellow(_0x2673d8));
-                  count++;
-                }, 80);
-                try {
-                  await exec("npm install " + _0x2cf529 + " --" + (_0x28fcc0.endsWith(".dev.js") ? "no-save" : "save"));
-                  clearInterval(_0x4d8c99);
-                  process.stderr.write("\r[K");
-                  console.log(colors.green('✔') + " installed package " + _0x2cf529 + " successfully");
-                } catch (_0x22338b) {
-                  clearInterval(_0x4d8c99);
-                  process.stderr.write("\r[K");
-                  console.log(colors.red('✖') + " installed package " + _0x2cf529 + " failed");
-                  throw new Error("Can't install package " + _0x2cf529);
-                }
-              }
-            }
-          }
-        }
-        global.temp.contentScripts[_0x50f23c][_0x2673d8] = _0x4f08bf;
-        const _0x54f1f9 = require(_0x28fcc0);
-        _0x54f1f9.location = _0x28fcc0;
-        const _0x1d1388 = _0x54f1f9.config;
-        const _0x200277 = _0x1d1388.name;
-        if (!_0x1d1388) {
-          throw new Error("config of " + _0x2b5a43 + " undefined");
-        }
-        if (!_0x1d1388.category) {
-          throw new Error("category of " + _0x2b5a43 + " undefined");
-        }
-        if (!_0x200277) {
-          throw new Error("name of " + _0x2b5a43 + " undefined");
-        }
-        if (!_0x54f1f9.onStart) {
-          throw new Error("onStart of " + _0x2b5a43 + " undefined");
-        }
-        if (typeof _0x54f1f9.onStart !== "function") {
-          throw new Error("onStart of " + _0x2b5a43 + " must be a function");
-        }
-        if (GoatBot[_0x15552a].has(_0x200277)) {
-          throw new Error(_0x2b5a43 + " \"" + _0x200277 + "\" already exists with file \"" + removeHomeDir(GoatBot[_0x15552a].get(_0x200277).location || '') + "\"");
-        }
-        const {
-          onFirstChat: _0x4b0a00,
-          onChat: _0x27fc0a,
-          onLoad: _0x458b96,
-          onEvent: _0x305b83,
-          onAnyEvent: _0x3f4398
-        } = _0x54f1f9;
-        const {
-          envGlobal: _0x50378a,
-          envConfig: _0x5474bb
-        } = _0x1d1388;
-        const {
-          aliases: _0x59626b
-        } = _0x1d1388;
-        const _0x3a9cf2 = [];
-        if (_0x59626b) {
-          if (!Array.isArray(_0x59626b)) {
-            throw new Error("The value of \"config.aliases\" must be array!");
-          }
-          for (const _0xc02e3b of _0x59626b) {
-            if (_0x59626b.filter(_0x359866 => _0x359866 == _0xc02e3b).length > 1) {
-              throw new Error("alias \"" + _0xc02e3b + "\" duplicate in " + _0x2b5a43 + " \"" + _0x200277 + "\" with file \"" + removeHomeDir(_0x28fcc0) + "\"");
-            }
-            if (GoatBot.aliases.has(_0xc02e3b)) {
-              throw new Error("alias \"" + _0xc02e3b + "\" already exists in " + _0x2b5a43 + " \"" + GoatBot.aliases.get(_0xc02e3b) + "\" with file \"" + removeHomeDir(GoatBot[_0x15552a].get(GoatBot.aliases.get(_0xc02e3b))?.["location"] || '') + "\"");
-            }
-            _0x3a9cf2.push(_0xc02e3b);
-          }
-          for (const _0x26988a of _0x3a9cf2) GoatBot.aliases.set(_0x26988a, _0x200277);
-        }
-        if (_0x50378a) {
-          if (typeof _0x50378a != "object" || typeof _0x50378a == "object" && Array.isArray(_0x50378a)) {
-            throw new Error("the value of \"envGlobal\" must be object");
-          }
-          for (const _0x209099 in _0x50378a) {
-            if (!configCommands.envGlobal[_0x209099]) {
-              configCommands.envGlobal[_0x209099] = _0x50378a[_0x209099];
-            } else {
-              const _0x576658 = readFileSync(_0x28fcc0, "utf-8").replace(_0x50378a[_0x209099], configCommands.envGlobal[_0x209099]);
-              writeFileSync(_0x28fcc0, _0x576658);
-            }
-          }
-        }
-        if (_0x5474bb) {
-          if (typeof _0x5474bb != "object" || typeof _0x5474bb == "object" && Array.isArray(_0x5474bb)) {
-            throw new Error("The value of \"envConfig\" must be object");
-          }
-          if (!configCommands[_0x15df96]) {
-            configCommands[_0x15df96] = {};
-          }
-          if (!configCommands[_0x15df96][_0x200277]) {
-            configCommands[_0x15df96][_0x200277] = {};
-          }
-          for (const [_0x40526b, _0x29b1a8] of Object.entries(_0x5474bb)) {
-            if (!configCommands[_0x15df96][_0x200277][_0x40526b]) {
-              configCommands[_0x15df96][_0x200277][_0x40526b] = _0x29b1a8;
-            } else {
-              const _0x2106d6 = readFileSync(_0x28fcc0, "utf-8").replace(_0x29b1a8, configCommands[_0x15df96][_0x200277][_0x40526b]);
-              writeFileSync(_0x28fcc0, _0x2106d6);
-            }
-          }
-        }
-        if (_0x458b96) {
-          if (typeof _0x458b96 != "function") {
-            throw new Error("The value of \"onLoad\" must be function");
-          }
-          await _0x458b96({
-            'api': _0x423297,
-            'threadModel': _0xce5d8c,
-            'userModel': _0x543fe1,
-            'dashBoardModel': _0x40a3c5,
-            'globalModel': _0x2ee1a4,
-            'threadsData': _0x8c6cf0,
-            'usersData': _0xed1903,
-            'dashBoardData': _0x4ee66f,
-            'globalData': _0x12fdad
-          });
-        }
-        if (_0x27fc0a) {
-          GoatBot.onChat.push(_0x200277);
-        }
-        if (_0x4b0a00) {
-          GoatBot.onFirstChat.push({
-            'commandName': _0x200277,
-            'threadIDsChattedFirstTime': []
-          });
-        }
-        if (_0x305b83) {
-          GoatBot.onEvent.push(_0x200277);
-        }
-        if (_0x3f4398) {
-          GoatBot.onAnyEvent.push(_0x200277);
-        }
-        GoatBot[_0x15552a].set(_0x200277.toLowerCase(), _0x54f1f9);
-        _0x41c646++;
-        global.GoatBot[_0x50f23c == "cmds" ? "commandFilesPath" : "eventCommandsFilesPath"].push({
-          'filePath': path.normalize(_0x28fcc0),
-          'commandName': [_0x200277, ..._0x3a9cf2]
-        });
-      } catch (_0x5326e4) {
-        _0x43777d.push({
-          'name': _0x2673d8,
-          'error': _0x5326e4
-        });
-      }
-      loading.info("SHOUROV-BOT.. LOADED", '' + colors.green('' + _0x41c646) + (_0x43777d.length ? ", " + colors.red('' + _0x43777d.length) : ''));
-    }
-    console.log("\r");
-    if (_0x43777d.length > 0) {
-      log.err("SHOUROV-BOT.. LOADED", getText("loadScripts", "loadScriptsError", colors.yellow(_0x2b5a43)));
-      for (const _0x4c6b29 of _0x43777d) console.log(" " + colors.red("✖ " + _0x4c6b29.name) + ": " + _0x4c6b29.error.message + "\n", _0x4c6b29.error);
-    }
-  }
+
+module.exports = async function (api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData, createLine) {
+	/* { CHECK ORIGIN CODE } */
+
+	const aliasesData = await globalData.get('setalias', 'data', []);
+	if (aliasesData) {
+		for (const data of aliasesData) {
+			const { aliases, commandName } = data;
+			for (const alias of aliases)
+				if (GoatBot.aliases.has(alias))
+					throw new Error(`Alias "${alias}" already exists in command "${commandName}"`);
+				else
+					GoatBot.aliases.set(alias, commandName);
+		}
+	}
+	const folders = ["cmds", "events"];
+	let text, setMap, typeEnvCommand;
+
+	for (const folderModules of folders) {
+		const makeColor = folderModules == "cmds" ?
+			createLine("LOAD COMMANDS") :
+			createLine("LOAD COMMANDS EVENT");
+		console.log(colors.hex("#f5ab00")(makeColor));
+
+		if (folderModules == "cmds") {
+			text = "command";
+			typeEnvCommand = "envCommands";
+			setMap = "commands";
+		}
+		else if (folderModules == "events") {
+			text = "event command";
+			typeEnvCommand = "envEvents";
+			setMap = "eventCommands";
+		}
+
+		const fullPathModules = path.normalize(process.cwd() + `/scripts/${folderModules}`);
+		const Files = readdirSync(fullPathModules)
+			.filter(file =>
+				file.endsWith(".js") &&
+				!file.endsWith("eg.js") && // ignore example file
+				(process.env.NODE_ENV == "development" ? true : !file.match(/(dev)\.js$/g)) && // ignore dev file in production mode
+				!configCommands[folderModules == "cmds" ? "commandUnload" : "commandEventUnload"]?.includes(file) // ignore unload command
+			);
+
+		const commandError = [];
+		let commandLoadSuccess = 0;
+
+		for (const file of Files) {
+			const pathCommand = path.normalize(fullPathModules + "/" + file);
+			try {
+				// ————————————————— CHECK PACKAGE ————————————————— //
+				const contentFile = readFileSync(pathCommand, "utf8");
+				let allPackage = contentFile.match(regExpCheckPackage);
+				if (allPackage) {
+					allPackage = allPackage.map(p => p.match(/[`'"]([^`'"]+)[`'"]/)[1])
+						.filter(p => p.indexOf("/") !== 0 && p.indexOf("./") !== 0 && p.indexOf("../") !== 0 && p.indexOf(__dirname) !== 0);
+					for (let packageName of allPackage) {
+						// @user/abc => @user/abc
+						// @user/abc/dist/xyz.js => @user/abc
+						// @user/abc/dist/xyz => @user/abc
+						if (packageName.startsWith('@'))
+							packageName = packageName.split('/').slice(0, 2).join('/');
+						else
+							packageName = packageName.split('/')[0];
+
+						if (!packageAlready.includes(packageName)) {
+							packageAlready.push(packageName);
+							if (!existsSync(`${process.cwd()}/node_modules/${packageName}`)) {
+								const wating = setInterval(() => {
+									// loading.info('PACKAGE', `${spinner[count % spinner.length]} Installing package ${packageName} for ${text} ${file}`);
+									loading.info('PACKAGE', `${spinner[count % spinner.length]} Installing package ${colors.yellow(packageName)} for ${text} ${colors.yellow(file)}`);
+									count++;
+								}, 80);
+								try {
+									await exec(`npm install ${packageName} --${pathCommand.endsWith('.dev.js') ? 'no-save' : 'save'}`);
+									clearInterval(wating);
+									process.stderr.write('\r\x1b[K');
+									console.log(`${colors.green('✔')} installed package ${packageName} successfully`);
+								}
+								catch (err) {
+									clearInterval(wating);
+									process.stderr.write('\r\x1b[K');
+									console.log(`${colors.red('✖')} installed package ${packageName} failed`);
+									throw new Error(`Can't install package ${packageName}`);
+								}
+							}
+						}
+					}
+				}
+
+				// —————————————— CHECK CONTENT SCRIPT —————————————— //
+				global.temp.contentScripts[folderModules][file] = contentFile;
+
+
+				const command = require(pathCommand);
+				command.location = pathCommand;
+				const configCommand = command.config;
+				const commandName = configCommand.name;
+				// ——————————————— CHECK SYNTAXERROR ——————————————— //
+				if (!configCommand)
+					throw new Error(`config of ${text} undefined`);
+				if (!configCommand.category)
+					throw new Error(`category of ${text} undefined`);
+				if (!commandName)
+					throw new Error(`name of ${text} undefined`);
+				if (!command.onStart)
+					throw new Error(`onStart of ${text} undefined`);
+				if (typeof command.onStart !== "function")
+					throw new Error(`onStart of ${text} must be a function`);
+				if (GoatBot[setMap].has(commandName))
+					throw new Error(`${text} "${commandName}" already exists with file "${removeHomeDir(GoatBot[setMap].get(commandName).location || "")}"`);
+				const { onFirstChat, onChat, onLoad, onEvent, onAnyEvent } = command;
+				const { envGlobal, envConfig } = configCommand;
+				const { aliases } = configCommand;
+				// ————————————————— CHECK ALIASES —————————————————— //
+				const validAliases = [];
+				if (aliases) {
+					if (!Array.isArray(aliases))
+						throw new Error("The value of \"config.aliases\" must be array!");
+					for (const alias of aliases) {
+						if (aliases.filter(item => item == alias).length > 1)
+							throw new Error(`alias "${alias}" duplicate in ${text} "${commandName}" with file "${removeHomeDir(pathCommand)}"`);
+						if (GoatBot.aliases.has(alias))
+							throw new Error(`alias "${alias}" already exists in ${text} "${GoatBot.aliases.get(alias)}" with file "${removeHomeDir(GoatBot[setMap].get(GoatBot.aliases.get(alias))?.location || "")}"`);
+						validAliases.push(alias);
+					}
+					for (const alias of validAliases)
+						GoatBot.aliases.set(alias, commandName);
+				}
+				// ——————————————— CHECK ENV GLOBAL ——————————————— //
+				if (envGlobal) {
+					if (typeof envGlobal != "object" || typeof envGlobal == "object" && Array.isArray(envGlobal))
+						throw new Error("the value of \"envGlobal\" must be object");
+					for (const i in envGlobal) {
+						if (!configCommands.envGlobal[i]) {
+							configCommands.envGlobal[i] = envGlobal[i];
+						}
+						else {
+							const readCommand = readFileSync(pathCommand, "utf-8").replace(envGlobal[i], configCommands.envGlobal[i]);
+							writeFileSync(pathCommand, readCommand);
+						}
+					}
+				}
+				// ———————————————— CHECK CONFIG CMD ——————————————— //
+				if (envConfig) {
+					if (typeof envConfig != "object" || typeof envConfig == "object" && Array.isArray(envConfig))
+						throw new Error("The value of \"envConfig\" must be object");
+					if (!configCommands[typeEnvCommand])
+						configCommands[typeEnvCommand] = {};
+					if (!configCommands[typeEnvCommand][commandName])
+						configCommands[typeEnvCommand][commandName] = {};
+					for (const [key, value] of Object.entries(envConfig)) {
+						if (!configCommands[typeEnvCommand][commandName][key])
+							configCommands[typeEnvCommand][commandName][key] = value;
+						else {
+							const readCommand = readFileSync(pathCommand, "utf-8").replace(value, configCommands[typeEnvCommand][commandName][key]);
+							writeFileSync(pathCommand, readCommand);
+						}
+					}
+				}
+				// ————————————————— CHECK ONLOAD ————————————————— //
+				if (onLoad) {
+					if (typeof onLoad != "function")
+						throw new Error("The value of \"onLoad\" must be function");
+					await onLoad({ api, threadModel, userModel, dashBoardModel, globalModel, threadsData, usersData, dashBoardData, globalData });
+				}
+				// ——————————————— CHECK RUN ANYTIME ——————————————— //
+				if (onChat)
+					GoatBot.onChat.push(commandName);
+				// ——————————————— CHECK ONFIRSTCHAT ——————————————— //
+				if (onFirstChat)
+					GoatBot.onFirstChat.push({ commandName, threadIDsChattedFirstTime: [] });
+				// ————————————————— CHECK ONEVENT ————————————————— //
+				if (onEvent)
+					GoatBot.onEvent.push(commandName);
+				// ———————————————— CHECK ONANYEVENT ———————————————— //
+				if (onAnyEvent)
+					GoatBot.onAnyEvent.push(commandName);
+				// —————————————— IMPORT TO GLOBALGOAT —————————————— //
+				GoatBot[setMap].set(commandName.toLowerCase(), command);
+				commandLoadSuccess++;
+				// ————————————————— COMPARE COMMAND (removed in open source) ————————————————— //
+
+				global.GoatBot[folderModules == "cmds" ? "commandFilesPath" : "eventCommandsFilesPath"].push({
+					// filePath: pathCommand,
+					filePath: path.normalize(pathCommand),
+					commandName: [commandName, ...validAliases]
+				});
+			}
+			catch (error) {
+				commandError.push({
+					name: file,
+					error
+				});
+			}
+			loading.info('LOADED', `${colors.green(`${commandLoadSuccess}`)}${commandError.length ? `, ${colors.red(`${commandError.length}`)}` : ''}`);
+		}
+		console.log("\r");
+		if (commandError.length > 0) {
+			log.err("LOADED", getText('loadScripts', 'loadScriptsError', colors.yellow(text)));
+			for (const item of commandError)
+				console.log(` ${colors.red('✖ ' + item.name)}: ${item.error.message}\n`, item.error);
+		}
+	}
 };
