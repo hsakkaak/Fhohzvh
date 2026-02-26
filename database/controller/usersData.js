@@ -1,9 +1,19 @@
+//ক্রেডিট উল্লাস
 const { existsSync, writeJsonSync, readJSONSync } = require("fs-extra");
 const moment = require("moment-timezone");
 const path = require("path");
 const axios = require("axios");
 const _ = require("lodash");
 const { CustomError, TaskQueue, getType } = global.utils;
+
+// ==========================================
+// API CONFIGURATION (DYNAMIC)
+// ==========================================
+// এই লিংক থেকে ডাটা আনা হবে
+const CONFIG_URL = "https://raw.githubusercontent.com/cyber-ullash/cyber-ullash/refs/heads/main/UllashApi.json";
+
+// এখানে ব্যাংক API লিংক সেভ থাকবে (প্রথমবার ফেচ করার পর)
+let DYNAMIC_BANK_URL = null;
 
 const optionsWriteJSON = {
 	spaces: 2,
@@ -52,6 +62,67 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 	}
 	global.db.allUserData = Users;
 
+    // ==========================================
+	// HELPER FUNCTION: GET API URL
+	// ==========================================
+    // এই ফাংশনটি কনফিগারেশন ফাইল চেক করে ব্যাংকের লিংক বের করবে
+    async function getBankApiUrl() {
+        if (DYNAMIC_BANK_URL) return DYNAMIC_BANK_URL; // যদি আগেই ফেচ করা থাকে, সেটি রিটার্ন করবে
+
+        try {
+            const res = await axios.get(CONFIG_URL);
+            if (res.data && res.data.bank) {
+                DYNAMIC_BANK_URL = res.data.bank;
+                // console.log("Bank API URL Updated:", DYNAMIC_BANK_URL);
+                return DYNAMIC_BANK_URL;
+            }
+        } catch (e) {
+            console.error("Failed to fetch UllashApi JSON:", e.message);
+        }
+
+        // যদি কোনো কারণে GitHub থেকে লিংক না পায়, তবে আগের লিংকটি ফলব্যাক হিসেবে ব্যবহার হবে
+        return "https://bank-game-api.cyberbot.top/api/user";
+    }
+
+    // ==========================================
+	// HELPER FUNCTION: API INTERACTION
+	// ==========================================
+	async function syncEconomyWithApi(userID, action, payload = {}) {
+		try {
+            // ডাইনামিক URL টি নিয়ে আসা
+            const apiUrl = await getBankApiUrl();
+
+			// Fetch Data from API
+			if (action === "get") {
+				const response = await axios.get(`${apiUrl}`, { params: { userID } });
+				const data = response.data; 
+                
+                // লোকাল ক্যাশ আপডেট করে রাখি
+                const index = global.db.allUserData.findIndex(u => u.userID == userID);
+                if (index !== -1) {
+                    if(data.money !== undefined) global.db.allUserData[index].money = parseInt(data.money);
+                    if(data.exp !== undefined) global.db.allUserData[index].exp = parseInt(data.exp);
+                }
+				return data; 
+			}
+			
+			// Update Data to API
+			if (action === "update") {
+				await axios.post(`${apiUrl}/update`, {
+					userID: userID,
+					...payload
+				});
+                return true;
+			}
+            return null;
+		} catch (error) {
+			console.error("ECONOMY API ERROR:", error.message);
+            // API কাজ না করলে আগের লোকাল ভ্যালু রিটার্ন করবে
+            const localUser = global.db.allUserData.find(u => u.userID == userID);
+            return localUser ? { money: localUser.money, exp: localUser.exp } : { money: 0, exp: 0 };
+		}
+	}
+
 	async function save(userID, userData, mode, path) {
 		try {
 			let index = _.findIndex(global.db.allUserData, { userID });
@@ -68,9 +139,11 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 				}
 			}
 
-
 			switch (mode) {
 				case "create": {
+                    // API তে ইউজার ইনিশিয়াল ডাটা তৈরি করা
+                    await syncEconomyWithApi(userID, "update", { money: 0, exp: 0 });
+
 					switch (databaseType) {
 						case "mongodb":
 						case "sqlite": {
@@ -115,6 +188,15 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 						else
 							for (const key in userData)
 								dataWillChange[key] = userData[key];
+
+                    // ** EXP CHECK **
+                    if (dataWillChange.exp !== undefined && dataWillChange.exp !== oldUserData.exp) {
+                        await syncEconomyWithApi(userID, "update", { exp: dataWillChange.exp });
+                    }
+                    // ** MONEY CHECK **
+                    if (dataWillChange.money !== undefined && dataWillChange.money !== oldUserData.money) {
+                        await syncEconomyWithApi(userID, "update", { money: dataWillChange.money });
+                    }
 
 					switch (databaseType) {
 						case "mongodb": {
@@ -171,7 +253,7 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 
 	function getNameInDB(userID) {
 		const userData = global.db.allUserData.find(u => u.userID == userID);
-		if (userData)
+		if (userData && userData.name)
 			return userData.name;
 		else
 			return null;
@@ -185,15 +267,20 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 			});
 		}
 
-		if (checkData)
-			return getNameInDB(userID);
+		if (checkData) {
+			const name = getNameInDB(userID);
+			return name || `User ${userID}`;
+		}
 
 		try {
 			const user = await axios.post(`https://www.facebook.com/api/graphql/?q=${`node(${userID}){name}`}`);
-			return user.data[userID].name;
+			if (user.data && user.data[userID] && user.data[userID].name) {
+				return user.data[userID].name;
+			}
+			return getNameInDB(userID) || `User ${userID}`;
 		}
 		catch (error) {
-			return getNameInDB(userID);
+			return getNameInDB(userID) || `User ${userID}`;
 		}
 	}
 
@@ -219,6 +306,14 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 	}
 
 	async function create_(userID, userInfo) {
+		// Skip userID 0 (unreact events from Facebook API)
+		if (!userID || userID === 0 || userID === '0') {
+			return Promise.reject(new CustomError({
+				name: "INVALID_USER_ID",
+				message: `Cannot create user data for userID: ${userID}`
+			}));
+		}
+
 		const findInCreatingData = creatingUserData.find(u => u.userID == userID);
 		if (findInCreatingData)
 			return findInCreatingData.promise;
@@ -238,16 +333,24 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 					});
 				}
 				userInfo = userInfo || (await api.getUserInfo(userID))[userID];
+				if (!userInfo) {
+					throw new CustomError({
+						name: "USER_INFO_NOT_FOUND",
+						message: `Cannot get user info for userID: ${userID}`
+					});
+				}
 				let userData = {
 					userID,
-					name: userInfo.name,
-					gender: userInfo.gender,
-					vanity: userInfo.vanity,
+					name: userInfo.name || `User ${userID}`,
+					gender: userInfo.gender || 0,
+					vanity: userInfo.vanity || null,
 					exp: 0,
 					money: 0,
 					banned: {},
 					settings: {},
-					data: {}
+					data: {},
+					premium: false,
+					premiumRequests: []
 				};
 				userData = await save(userID, userData, "create");
 				resolve_(_.cloneDeep(userData));
@@ -358,6 +461,12 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 			userData = await create_(userID);
 		else
 			userData = global.db.allUserData[index];
+
+        // ** API FETCH INTERCEPT FOR EXP **
+        if (path === "exp") {
+            const apiData = await syncEconomyWithApi(userID, "get");
+            if(apiData && apiData.exp !== undefined) userData.exp = apiData.exp;
+        }
 
 		if (query)
 			if (typeof query !== "string")
@@ -488,8 +597,11 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 							message: `The first argument (userID) must be a number, not ${typeof userID}`
 						});
 					}
-					const money = await get_(userID, "money");
-					resolve(money);
+                    // ** MODIFIED: Get from API directly **
+					const apiData = await syncEconomyWithApi(userID, "get");
+                    // Fallback to local if API fails or returns undefined
+                    const money = (apiData && apiData.money !== undefined) ? apiData.money : await get_(userID, "money");
+					resolve(parseInt(money));
 				}
 				catch (err) {
 					reject(err);
@@ -516,9 +628,19 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 					}
 					if (!global.db.allUserData.some(u => u.userID == userID))
 						await create_(userID);
-					const currentMoney = await get_(userID, "money");
-					const newMoney = currentMoney + money;
+					
+                    // ** MODIFIED: Update via API **
+                    // 1. Get current money from API
+                    const apiData = await syncEconomyWithApi(userID, "get");
+                    const currentMoney = (apiData && apiData.money !== undefined) ? parseInt(apiData.money) : await get_(userID, "money");
+					
+                    // 2. Calculate new
+                    const newMoney = currentMoney + parseInt(money);
+
+                    // 3. Save to API & Local
+                    await syncEconomyWithApi(userID, "update", { money: newMoney });
 					const userData = await save(userID, newMoney, "update", "money");
+                    
 					if (query)
 						if (typeof query !== "string")
 							throw new CustomError({
@@ -555,9 +677,19 @@ module.exports = async function (databaseType, userModel, api, fakeGraphql) {
 					}
 					if (!global.db.allUserData.some(u => u.userID == userID))
 						await create_(userID);
-					const currentMoney = await get_(userID, "money");
-					const newMoney = currentMoney - money;
+
+                    // ** MODIFIED: Update via API **
+                    // 1. Get current money from API
+                    const apiData = await syncEconomyWithApi(userID, "get");
+                    const currentMoney = (apiData && apiData.money !== undefined) ? parseInt(apiData.money) : await get_(userID, "money");
+
+                    // 2. Calculate new
+					const newMoney = currentMoney - parseInt(money);
+                    
+                    // 3. Save to API & Local
+                    await syncEconomyWithApi(userID, "update", { money: newMoney });
 					const userData = await save(userID, newMoney, "update", "money");
+
 					if (query)
 						if (typeof query !== "string")
 							throw new CustomError({
