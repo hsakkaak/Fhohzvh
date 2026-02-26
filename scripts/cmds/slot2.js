@@ -1,6 +1,6 @@
 module.exports = {
   config: {
-    name: "slot",
+    name: "slot2",
     version: "5.0",
     author: "MAHBUB ULLASH",
     description: {
