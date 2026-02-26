@@ -1,4 +1,4 @@
-name: SHOUROV-BOTV2
+name: SHOUROV-GOTBOT
 
 on:
   workflow_dispatch:
