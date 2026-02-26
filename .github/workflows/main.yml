@@ -1,27 +1,25 @@
 name: SHOUROV-GOTBOT
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 360
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install --omit=dev
+        run: npm install
 
       - name: Start Shourov bot
-        run: |
-          echo "Shourov Bot starting..."
-          node index.js &
-          sleep 21600
+        run: node index.js
