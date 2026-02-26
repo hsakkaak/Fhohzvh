@@ -54,36 +54,44 @@ module.exports = {
   onStart: async function ({ api, event }) {
     try {
       let pathImg = __dirname + "/tmp/background.png";
-      let pathAvt1 = __dirname + "/tmp/Avtmot.png";
+      let pathAvt = __dirname + "/tmp/avatar.png";
 
-      var id = Object.keys(event.mentions)[0] || event.senderID;
-      var nameInfo = await api.getUserInfo(id);
-      var name = nameInfo[id].name;
+      let targetID;
 
-      var background = ["https://files.catbox.moe/ibmk54.jpg"];
-      var rd = background[Math.floor(Math.random() * background.length)];
+      if (event.mentions && Object.keys(event.mentions).length > 0) {
+        targetID = Object.keys(event.mentions)[0];
+      } else if (event.messageReply && event.messageReply.senderID) {
+        targetID = event.messageReply.senderID;
+      } else {
+        targetID = event.senderID;
+      }
 
-      // Avatar
-      let getAvtmot = (
+      const userInfo = await api.getUserInfo(targetID);
+      const name = userInfo[targetID]?.name || "Unknown User";
+
+      const backgrounds = [
+        "https://files.catbox.moe/ibmk54.jpg"
+      ];
+      const rd = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+
+      const avatarData = (
         await axios.get(
-          `https://graph.facebook.com/${id}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
+          `https://graph.facebook.com/${targetID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
           { responseType: "arraybuffer" }
         )
       ).data;
-      fs.writeFileSync(pathAvt1, Buffer.from(getAvtmot, "utf-8"));
+      fs.writeFileSync(pathAvt, Buffer.from(avatarData));
 
-      // Background
-      let getbackground = (
+      const bgData = (
         await axios.get(rd, { responseType: "arraybuffer" })
       ).data;
-      fs.writeFileSync(pathImg, Buffer.from(getbackground, "utf-8"));
+      fs.writeFileSync(pathImg, Buffer.from(bgData));
 
-      // Canvas work
-      let baseImage = await loadImage(pathImg);
-      let baseAvt1 = await loadImage(pathAvt1);
+      const baseImage = await loadImage(pathImg);
+      const avatar = await loadImage(pathAvt);
 
-      let canvas = createCanvas(baseImage.width, baseImage.height);
-      let ctx = canvas.getContext("2d");
+      const canvas = createCanvas(baseImage.width, baseImage.height);
+      const ctx = canvas.getContext("2d");
 
       ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
 
@@ -93,16 +101,17 @@ module.exports = {
       const lines = await wrapText(ctx, name, 1160);
       ctx.fillText(lines.join("\n"), 146, 451);
 
-      ctx.drawImage(baseAvt1, 55, 410, 70, 70);
+      ctx.drawImage(avatar, 55, 410, 70, 70);
 
       const imageBuffer = canvas.toBuffer();
       fs.writeFileSync(pathImg, imageBuffer);
 
-      fs.removeSync(pathAvt1);
+      fs.removeSync(pathAvt);
 
       return api.sendMessage(
         {
-          body: "✅ 𝙎𝙪𝙘𝙘𝙚𝙨𝙨𝙛𝙪𝙡𝙡𝙮 𝙃𝙖𝙘𝙠𝙚𝙙 𝙏𝙝𝙞𝙨 𝙐𝙨𝙚𝙧!\nMy Lord, আইড়ি বাঁচাতে চাইলে ALihsan Shourov বসকে তাড়াতাড়ি ইনবক্স দে!",
+          body:
+            "✅ 𝙎𝙪𝙘𝙘𝙚𝙨𝙨𝙛𝙪𝙡𝙡𝙮 𝙃𝙖𝙘𝙠𝙚𝙙 𝙏𝙝𝙞𝙨 𝙐𝙨𝙚𝙧!",
           attachment: fs.createReadStream(pathImg),
         },
         event.threadID,
@@ -110,6 +119,7 @@ module.exports = {
         event.messageID
       );
     } catch (error) {
+      console.error(error);
       return api.sendMessage(
         "❌ Error generating hack image!",
         event.threadID,
