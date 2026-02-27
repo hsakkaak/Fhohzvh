@@ -29,6 +29,10 @@
     },
     "dhbc": {
       "reward": 1000
+    },
+    "datetime": {},
+    "wanted": {
+      "deltaNext": 5
     }
   },
   "envEvents": {

@@ -226,8 +226,32 @@ app.get('/', (req, res) => {
         res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
+app.get('/dashboard', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public/dashboard.html'));
+});
+
 app.get('/appstate', (req, res) => {
         res.sendFile(path.join(__dirname, 'public/appstate.html'));
+});
+
+app.get('/settings', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public/settings.html'));
+});
+
+app.get('/logs', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public/logs.html'));
+});
+
+app.get('/chat', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public/chat.html'));
+});
+
+app.get('/control', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public/control.html'));
+});
+
+app.get('/command', (req, res) => {
+        res.sendFile(path.join(__dirname, 'public/command.html'));
 });
 
 app.get("/api/stats", (req, res) => {
