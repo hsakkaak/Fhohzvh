@@ -17,20 +17,20 @@
     "ignoreCommand": []
   },
   "adminBot": [
-    "100071971474157",
-    "100071971474157"
+    "61588161951831",
+    "61588161951831"
   ],
   "vip": [
-    "100071971474157",
-    "100071971474157"
+    "61588161951831",
+    "61588161951831"
   ],
   "whiteListMode": {
     "enable": false,
-    "whiteListIds": [100071971474157],
+    "whiteListIds": [61588161951831],
     "notes": "if you enable this feature, only the ids in the whiteListIds section can use the bot"
   },
   "nickNameBot": "𝐒𝐇𝐎𝐔𝐑𝐎𝐕-𝐁𝐎𝐓",
-  "prefix": ".",
+  "prefix": ";",
   "api": "https://mahabub-apis.fun",
   "disabledCommands": [],
   "database": {
