@@ -25,7 +25,7 @@ function startBot(accountFileName) {
     cwd: __dirname,
     stdio: "inherit",
     shell: true,
-    env
+    env: { ...env, NODE_OPTIONS: "--trace-warnings" }
   });
 
   child.on("close", (code) => {

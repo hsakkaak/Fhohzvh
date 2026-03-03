@@ -52,9 +52,14 @@ if (process.env.PREFIX) config.prefix = process.env.PREFIX;
 
 // Ensure bot only runs if devUsers is present and contains authorized ID
 if (!config.devUsers || config.devUsers.length === 0) {
-    log.error("AUTH", "No devUsers found in config. Bot will not start.");
-    process.exit(0);
+    log.warn("AUTH", "No devUsers found in config. Dashboard will still start, but bot functions may be limited.");
+    // process.exit(0); // Don't exit, let dashboard run
+} else {
+    log.info("AUTH", `Loaded ${config.devUsers.length} devUsers.`);
 }
+
+log.info("SYSTEM", "Starting bot initialization...");
+
 
 if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
         config.whiteListMode.whiteListIds = config.whiteListMode.whiteListIds.map(id => id.toString());
