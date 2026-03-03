@@ -1,7 +1,7 @@
 language = "nodejs"
 run = "npm start"
 entrypoint = "index.js"
-modules = ["web", "nodejs-20"]
+modules = ["nodejs-18", "web"]
 
 [nix]
 channel = "stable-25_05"
