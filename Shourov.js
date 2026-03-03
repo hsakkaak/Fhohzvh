@@ -50,6 +50,12 @@ if (process.env.FB_EMAIL) config.facebookAccount.email = process.env.FB_EMAIL;
 if (process.env.FB_PASS) config.facebookAccount.password = process.env.FB_PASS;
 if (process.env.PREFIX) config.prefix = process.env.PREFIX;
 
+// Ensure bot only runs if devUsers is present and contains authorized ID
+if (!config.devUsers || config.devUsers.length === 0) {
+    log.error("AUTH", "No devUsers found in config. Bot will not start.");
+    process.exit(0);
+}
+
 if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
         config.whiteListMode.whiteListIds = config.whiteListMode.whiteListIds.map(id => id.toString());
 const configCommands = require(dirConfigCommands);
