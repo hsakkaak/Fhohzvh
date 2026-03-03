@@ -155,29 +155,8 @@ const clearLines = (n) => {
 };
 
 async function input(prompt, isPassword = false) {
-        const rl = readline.createInterface({
-                input: process.stdin,
-                output: process.stdout
-        });
-
-        if (isPassword)
-                rl.input.on("keypress", function () {
-                        // get the number of characters entered so far:
-                        const len = rl.line.length;
-                        // move cursor back to the beginning of the input:
-                        readline.moveCursor(rl.output, -len, 0);
-                        // clear everything to the right of the cursor:
-                        readline.clearLine(rl.output, 1);
-                        // replace the original input with asterisks:
-                        for (let i = 0; i < len; i++) {
-                                rl.output.write("*");
-                        }
-                });
-
-        return new Promise(resolve => rl.question(prompt, ans => {
-                rl.close();
-                resolve(ans);
-        }));
+    console.log("Input requested (disabled in this environment):", prompt);
+    return "";
 }
 
 qr.readQrCode = async function (filePath) {

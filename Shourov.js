@@ -1,5 +1,11 @@
-process.on('unhandledRejection', error => console.log(error));
-process.on('uncaughtException', error => console.log(error));
+process.on('unhandledRejection', error => {
+    console.error('Unhandled Rejection:', error);
+});
+process.on('uncaughtException', error => {
+    console.error('Uncaught Exception:', error);
+});
+
+console.log("SHOUROV.JS STARTING...");
 
 const axios = require("axios");
 const fs = require("fs-extra");
@@ -12,19 +18,15 @@ const path = require("path");
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0; // Disable warning: "Warning: a promise was created in a handler but was not returned from it"
 
 function validJSON(pathDir) {
-        try {
-                if (!fs.existsSync(pathDir))
-                        throw new Error(`File "${pathDir}" not found`);
-                execSync(`npx jsonlint "${pathDir}"`, { stdio: 'pipe' });
-                return true;
-        }
-        catch (err) {
-                let msgError = err.message;
-                msgError = msgError.split("\n").slice(1).join("\n");
-                const indexPos = msgError.indexOf("    at");
-                msgError = msgError.slice(0, indexPos != -1 ? indexPos - 1 : msgError.length);
-                throw new Error(msgError);
-        }
+    try {
+        if (!fs.existsSync(pathDir))
+            throw new Error(`File "${pathDir}" not found`);
+        JSON.parse(fs.readFileSync(pathDir, 'utf-8'));
+        return true;
+    }
+    catch (err) {
+        throw new Error(err.message);
+    }
 }
 
 const { NODE_ENV } = process.env;
@@ -59,6 +61,7 @@ if (!config.devUsers || config.devUsers.length === 0) {
 }
 
 log.info("SYSTEM", "Starting bot initialization...");
+console.log("DEBUG: Shourov.js is running");
 
 
 if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
@@ -272,9 +275,16 @@ if (config.autoRestart) {
         global.utils.transporter = transporter;
 
         // ———————————————— CHECK VERSION ———————————————— //
-        const { data: { version } } = await axios.get("https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/package.json");
+        console.log("Checking version...");
+        let version;
+        try {
+            const response = await axios.get("https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/package.json", { timeout: 5000 });
+            version = response.data.version;
+        } catch (e) {
+            console.log("Failed to check version, skipping...");
+        }
         const currentVersion = require("./package.json").version;
-        if (compareVersion(version, currentVersion) === 1)
+        if (version && compareVersion(version, currentVersion) === 1)
                 utils.log.master("NEW VERSION", getText(
                         "Goat",
                         "newVersionDetected",
@@ -283,8 +293,10 @@ if (config.autoRestart) {
                         colors.hex("#eb6a07", "node update")
                 ));
         // —————————— CHECK FOLDER GOOGLE DRIVE —————————— //
+        console.log("Checking Google Drive folder...");
         const parentIdGoogleDrive = await utils.drive.checkAndCreateParentFolder("GoatBot");
         utils.drive.parentID = parentIdGoogleDrive;
+        console.log("Loading login...");
         // ———————————————————— LOGIN ———————————————————— //
         require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
 })();

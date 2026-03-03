@@ -20,12 +20,20 @@ app.listen(PORT, "0.0.0.0", () => {
 });
 
 function startBot(accountFileName) {
+  console.log(`[index.js] Starting bot with account file: ${accountFileName}`);
   const env = { ...process.env, ACCOUNT_FILE: accountFileName };
   const child = spawn("node", ["Shourov.js"], {
     cwd: __dirname,
-    stdio: "inherit",
     shell: true,
     env: { ...env, NODE_OPTIONS: "--trace-warnings" }
+  });
+
+  child.stdout.on("data", (data) => {
+    process.stdout.write(data);
+  });
+
+  child.stderr.on("data", (data) => {
+    process.stderr.write(data);
   });
 
   child.on("close", (code) => {
