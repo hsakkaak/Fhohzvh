@@ -298,6 +298,7 @@ if (config.autoRestart) {
         utils.drive.parentID = parentIdGoogleDrive;
         console.log("Loading login...");
         // ———————————————————— LOGIN ———————————————————— //
+console.log("LOGIN FILE RUNNING...");
         require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
 })();
 
