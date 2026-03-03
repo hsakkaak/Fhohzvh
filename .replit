@@ -5,7 +5,7 @@ modules = ["web", "nodejs-20"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["libuuid"]
+packages = ["libuuid", "python3", "pkg-config", "pixman", "cairo", "pango", "libjpeg", "giflib", "librsvg"]
 
 [agent]
 expertMode = true
