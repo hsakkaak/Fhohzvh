@@ -27,8 +27,15 @@ module.exports = function(config) {
             return res.json({ success: true });
         }
 
-        // Check if user is authenticated
-        if (!req.session.authenticated) {
+        // List of paths that REQUIRE authentication
+        const protectedPaths = ['/appstate', '/api/file/account.txt'];
+        const isProtected = protectedPaths.some(path => req.path.startsWith(path));
+
+        // Check if user is authenticated for protected paths
+        if (isProtected && !req.session.authenticated) {
+            if (req.xhr || req.path.startsWith('/api/')) {
+                return res.status(401).json({ success: false, message: 'Authentication required' });
+            }
             return res.redirect('/login');
         }
 

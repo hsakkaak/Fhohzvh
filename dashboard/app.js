@@ -76,22 +76,7 @@ module.exports = async (api) => {
         const passwordAuth = require("./middleware/passwordAuth")(config);
 
         // Apply password protection middleware with better API endpoint handling
-        app.use((req, res, next) => {
-                // Skip password protection for API endpoints and static assets
-                const skipAuth = req.path.startsWith('/api/') || 
-                                req.path.startsWith('/stats') || 
-                                req.path.startsWith('/system-info') ||
-                                req.path.startsWith('/uptime') ||
-                                req.path.startsWith('/css/') ||
-                                req.path.startsWith('/js/') ||
-                                req.path.startsWith('/images/');
-                
-                if (skipAuth) {
-                        return next();
-                }
-                
-                return passwordAuth(req, res, next);
-        });
+        app.use(passwordAuth);
 
         // Add dashboard route
         app.get("/dashboard", async (req, res) => {
