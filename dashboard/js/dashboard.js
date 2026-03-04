@@ -3,7 +3,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const UID = urlParams.get("uid");
 
 // OWNER CHECK
-const IS_OWNER = UID === "100071971474157";
+const IS_OWNER = UID === "61588161951831";
 // 1️⃣ সব command আনতেছি
 fetch("/api/commands")
 .then(res => res.json())
