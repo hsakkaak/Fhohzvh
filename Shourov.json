@@ -7,6 +7,12 @@
     "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6.2 Safari/605.1.15",
     "autoUseWhenEmpty": true
   },
+  "facebookAccount": {
+    "email": "",
+    "password": "",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6.2 Safari/605.1.15",
+    "autoUseWhenEmpty": true
+  },
   "bioUpdate": {
     "enable": false,
     "bioText": "",
@@ -46,7 +52,7 @@
   "dashBoard": {
     "enable": true,
     "expireVerifyCode": 300000,
-    "port": 8080,
+    "port": 5000,
     "passwordProtection": {
       "enable": true,
       "password": "CYBER"
@@ -54,7 +60,7 @@
   },
   "serverUptime": {
     "enable": true,
-    "port": 8080,
+    "port": 5000,
     "socket": {
       "enable": true,
       "channelName": "uptime",
