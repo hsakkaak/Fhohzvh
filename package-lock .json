@@ -1,11 +1,11 @@
 {
-  "name": "CYBER GOAT BOT",
+  "name": "SHOUROV GOAT BOT",
   "version": "2.1.1",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
-      "name": "CYBER GOAT BOT",
+      "name": "SHOUROV GOAT BOT",
       "version": "2.1.0",
       "license": "MIT",
       "dependencies": {
