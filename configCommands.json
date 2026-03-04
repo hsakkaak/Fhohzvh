@@ -32,6 +32,10 @@
     },
     "notice": {
       "delayPerGroup": 250
+    },
+    "datetime": {},
+    "wanted": {
+      "deltaNext": 5
     }
   },
   "envEvents": {

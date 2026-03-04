@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["libuuid"]
+packages = ["libuuid", "cairo", "pango", "libpng", "libjpeg", "giflib", "librsvg", "pkg-config", "python3", "ffmpeg", "sqlite"]
 
 [workflows]
 runButton = "Project"
