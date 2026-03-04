@@ -6,10 +6,6 @@
   },
   "envCommands": {
     "daily": {
-      "rewardDay1": {
-        "coin": 100,
-        "exp": 10
-      },
       "rewardFirstDay": {
         "coin": 100,
         "exp": 10
@@ -29,11 +25,22 @@
     },
     "dhbc": {
       "reward": 1000
+    },
+    "uptime6": {},
+    "resend": {
+      "deltaNext": 5
+    },
+    "notice": {
+      "delayPerGroup": 250
     }
   },
   "envEvents": {
     "logsbot": {
       "allow": true
     }
-  }
+  },
+  "commandUnload": [
+    "fa2.js",
+    "upx.js"
+  ]
 }
