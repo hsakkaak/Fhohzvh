@@ -1,8 +1,8 @@
 {
-  "name": "CYBER GOAT BOT",
+  "name": "SHOUROV GOAT BOT",
   "version": "2.1.2",
-  "description": "A simple Bot chat messenger using personal account. Made by ST | CYBER ULLASH",
-  "main": "Ullash.js",
+  "description": "A simple Bot chat messenger using personal account. Made by ST | SHOUROV",
+  "main": "index.js",
   "engines": {
     "node": "18.x",
     "npm": ">=7.0.0"
@@ -55,7 +55,7 @@
   "scripts": {
     "start": "node Ullash.js"
   },
-  "author": "ST | CYBER ULLASH",
+  "author": "ALIHSAN SHOUROV",
   "license": "MIT",
   "repository": {
     "type": "git",
