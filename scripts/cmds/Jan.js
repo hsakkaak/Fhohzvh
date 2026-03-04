@@ -10,7 +10,7 @@ module.exports.config = {
   name: "janu",
   aliases: ["jan"],
   version: "1.0.0",
-  author: "MR᭄﹅ MAHABUB﹅ メꪜ",
+  author: "MR᭄﹅ ALIHSAN SHOUROV﹅ メꪜ",
   countDown: 0,
   role: 0,
   description: "Janu Simisimi Chat",

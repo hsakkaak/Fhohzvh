@@ -38,8 +38,6 @@ The workflow runs `node index.js` which spawns `Shourov.js`.
 - System dependency: `libuuid` (for canvas package)
 - All npm packages from `package.json`
 
-## Setup Notes
-
-- Fixed `index.js`: removed undefined `startBot()` call on line 20
-- Dashboard port changed to 5000 in `Shourov.json` for Replit webview
-- System dependency `libuuid` installed for canvas package support
+## Updates
+- Replaced all occurrences of "CYBER ULLASH", "MAHABUB", and "ULLASH" with "ALIHSAN SHOUROV" across the project.
+- Integrated `public` folder contents into the `dashboard` directory to ensure real functionality as requested.

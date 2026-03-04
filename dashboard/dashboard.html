@@ -1,0 +1,61 @@
+async function loadCommands() {
+  try {
+    const res = await fetch("/api/commands");
+
+    // login না থাকলে redirect
+    if (res.redirected) {
+      window.location.href = res.url;
+      return;
+    }
+
+    const data = await res.json();
+    const container = document.getElementById("cmds");
+    container.innerHTML = "";
+
+    data.forEach(cmd => {
+      const div = document.createElement("div");
+      div.className = "cmd";
+
+      div.innerHTML = `
+        <span>${cmd.name}</span>
+        <label>
+          <input type="checkbox" ${cmd.enabled ? "checked" : ""} />
+          ${cmd.enabled ? "ON" : "OFF"}
+        </label>
+      `;
+
+      const checkbox = div.querySelector("input");
+
+      checkbox.addEventListener("change", async () => {
+        try {
+          const res = await fetch("/api/command-toggle", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              command: cmd.name,
+              enable: checkbox.checked
+            })
+          });
+
+          if (!res.ok) {
+            alert("❌ Only admin can change commands");
+            checkbox.checked = !checkbox.checked;
+            return;
+          }
+
+          loadCommands();
+        } catch (e) {
+          alert("❌ Failed to update command");
+          checkbox.checked = !checkbox.checked;
+        }
+      });
+
+      container.appendChild(div);
+    });
+  } catch (e) {
+    document.getElementById("error").innerText =
+      "❌ Failed to load commands (not logged in?)";
+  }
+}
+
+loadCommands();

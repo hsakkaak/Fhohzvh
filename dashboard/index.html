@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SHOUROV BOT • Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+body{
+  margin:0;
+  font-family:'Orbitron',sans-serif;
+  background:#000;
+  color:white;
+  overflow-x:hidden;
+}
+
+/* 🔥 Animated Gradient */
+.animated-bg{
+  position:fixed;
+  inset:0;
+  z-index:-3;
+  background:linear-gradient(120deg,#00ffff,#7f00ff,#ff0080,#00ff9d);
+  background-size:400% 400%;
+  animation:neonMove 20s ease infinite;
+  filter:blur(60px);
+  opacity:.35;
+}
+
+/* 🌌 Floating Particles */
+#particles{
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  overflow:hidden;
+}
+.particle{
+  position:absolute;
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:rgba(0,255,255,.8);
+  box-shadow:0 0 12px currentColor;
+  animation:float 12s linear infinite;
+}
+
+@keyframes float{
+  from{transform:translateY(110vh) translateX(0);opacity:0}
+  to{transform:translateY(-10vh) translateX(80px);opacity:1}
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  z-index:-1;
+}
+
+@keyframes neonMove{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
+.card{
+  background:rgba(255,255,255,.05);
+  backdrop-filter:blur(14px);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.1);
+  transition:.4s;
+}
+.card:hover{transform:translateY(-6px) scale(1.03)}
+
+.neon{box-shadow:0 0 20px currentColor}
+.glow-blue{color:#00f2ff}
+.glow-pink{color:#ff007a}
+.glow-purple{color:#9d00ff}
+.glow-green{color:#22c55e}
+.glow-yellow{color:#facc15}
+
+video{border-radius:18px;cursor:pointer}
+</style>
+</head>
+
+<body class="p-6">
+<div class="animated-bg"></div>
+<div id="particles"></div>
+
+<audio id="hoverSound" src="https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3"></audio>
+<audio id="clickSound" src="https://assets.mixkit.co/active_storage/sfx/2691/2691-preview.mp3"></audio>
+
+<div class="max-w-7xl mx-auto space-y-8 overflow-visible">
+
+<!-- PROFILE -->
+<div class="card p-6 flex flex-col md:flex-row gap-6 items-center">
+  <video id="coverVideo" width="260" muted loop>
+    <source src="https://files.catbox.moe/ftoe7g.mp4">
+  </video>
+
+  <div class="flex-1">
+    <h1 class="text-4xl font-bold glow-blue neon">SHOUROV BOT</h1>
+    <p class="text-sm text-gray-400">Developer • ALIHSAN SHOUROV • AI Bot</p>
+
+    <div class="flex gap-4 mt-4 text-2xl">
+      <a href="https://www.facebook.com/shourov.sm24" target="_blank"><i class="fab fa-facebook glow-blue"></i></a>
+      <a href="https://wa.me/8801709281334" target="_blank"><i class="fab fa-whatsapp glow-green"></i></a>
+    </div>
+  </div>
+
+  <div class="text-right">
+    <div class="text-xs text-gray-400">BD TIME</div>
+    <div id="bdtime" class="text-xl glow-yellow neon"></div>
+  </div>
+</div>
+
+<!-- INFO -->
+<div class="card p-4 text-center glow-purple neon">
+  📩 For business inquiries or technical support, inbox me.
+</div>
+
+<div class="card p-4 text-center glow-blue neon">
+  ⚙️ Offering bot setup, automation support & custom dashboards.
+</div>
+
+<!-- STATS -->
+<div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+  <div class="card p-5 text-center glow-blue neon"><div>Groups</div><div id="groups" class="text-3xl">0</div></div>
+  <div class="card p-5 text-center glow-purple neon"><div>Users</div><div id="users" class="text-3xl">0</div></div>
+  <div class="card p-5 text-center glow-green neon"><div>Commands</div><div id="commands" class="text-3xl">0</div></div>
+  <div class="card p-5 text-center glow-pink neon col-span-2"><div>Admins</div><div id="admins" class="text-xs break-words"></div></div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<a href="/chat.html" class="card p-4 text-center glow-blue">
+  🤖 AI Chat Test
+</a>
+<div class="grid md:grid-cols-5 gap-6 mt-6">
+  <a href="/appstate.html" class="card p-4 text-center glow-blue">🔑 Appstate</a>
+  <a href="/logs.html" class="card p-4 text-center glow-purple">📜 Logs</a>
+  <a href="/control.html" class="card p-4 text-center glow-green">⚙️ Control</a>
+  <a href="/settings.html" class="card p-4 text-center glow-yellow">🛠 Settings</a>
+  <a href="/command.html" class="card p-4 text-center glow-pink">🧩 Commands</a>
+</div>
+
+</div>
+
+<script>
+/* 🔊 Sounds */
+const hoverSound=document.getElementById("hoverSound");
+const clickSound=document.getElementById("clickSound");
+document.querySelectorAll("a,.card").forEach(el=>{
+  el.onmouseenter=()=>hoverSound.play();
+  el.onclick=()=>clickSound.play();
+});
+
+/* 🎥 Video */
+const video=document.getElementById("coverVideo");
+video.onclick=()=>{video.muted=false;video.play();};
+
+/* 📊 Bot Info */
+async function loadBotInfo(){
+  try{
+    const r=await fetch("/api/botinfo");
+    const d=await r.json();
+    groups.innerText=d.groups;
+    users.innerText=d.users;
+    commands.innerText=d.commands;
+    admins.innerText=d.admins;
+    bdtime.innerText=d.bdTime;
+  }catch(e){}
+}
+setInterval(loadBotInfo,1000);
+loadBotInfo();
+
+/* 🌌 Create Floating Particles */
+const p=document.getElementById("particles");
+for(let i=0;i<40;i++){
+  const s=document.createElement("span");
+  s.className="particle";
+  s.style.left=Math.random()*100+"vw";
+  s.style.animationDuration=8+Math.random()*12+"s";
+  s.style.animationDelay=Math.random()*5+"s";
+  s.style.color=["#00f2ff","#ff007a","#9d00ff","#22c55e"][Math.floor(Math.random()*4)];
+  p.appendChild(s);
+}
+</script>
+
+</body>
+</html>

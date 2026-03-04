@@ -24,7 +24,7 @@ module.exports = {
   config: {
     name: "up3",
     version: "3.5",
-    author: "MR᭄﹅ MAHABUB﹅ メꪜ",
+    author: "MR᭄﹅ ALIHSAN SHOUROV﹅ メꪜ",
     countDown: 5,
     role: 0,
     description: "Check bot uptime with full system + VPS details",

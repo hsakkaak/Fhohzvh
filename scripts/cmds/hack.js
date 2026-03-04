@@ -42,7 +42,7 @@ async function wrapText(ctx, text, maxWidth) {
 module.exports = {
   config: {
     name: "hack",
-    author: "MAHBUB ULLASH",
+    author: "MAHBUB ALIHSAN SHOUROV",
     countDown: 5,
     role: 0,
     category: "fun",

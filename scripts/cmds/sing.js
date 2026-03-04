@@ -12,7 +12,7 @@ async function getBaseApi() {
   if (BASE_API) return BASE_API;
 
   const res = await axios.get(
-    "https://raw.githubusercontent.com/MR-MAHABUB-004/MAHABUB-BOT-STORAGE/refs/heads/main/APIURL.json"
+    "https://raw.githubusercontent.com/MR-ALIHSAN SHOUROV-004/ALIHSAN SHOUROV-BOT-STORAGE/refs/heads/main/APIURL.json"
   );
 
   BASE_API = res.data.api;

@@ -11,7 +11,7 @@ module.exports = {
     aliases: ["upt", "up"],
     version: "1.0.0",
     role: 0,
-    credits: "MAHABUB",
+    credits: "ALIHSAN SHOUROV",
     description: "Shows bot uptime and status info (image based)",
     category: "info",
     guide: "{pn}"

@@ -26,7 +26,7 @@ module.exports = {
     name: "top",
     aliases: ["rich", "leaderboard", "coinstop"],
     version: "2.0.0",
-    author: "MAHBUB ULLASH",
+    author: "MAHBUB ALIHSAN SHOUROV",
     countDown: 5,
     role: 0,
     shortDescription: "Show top 15 richest users",

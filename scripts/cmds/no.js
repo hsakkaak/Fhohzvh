@@ -2,7 +2,7 @@ module.exports = {
 	config: {
 		name: "assalamualaikum",
 		version: "1.0",
-		author: "MAHBUB ULLASH",
+		author: "MAHBUB ALIHSAN SHOUROV",
 		countDown: 5,
 		role: 0,
 		shortDescription: "noprefix custom question and answer",

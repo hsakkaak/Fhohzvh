@@ -4,7 +4,7 @@ module.exports.config = {
   name: "nt",
   aliases: ["nteach"],
   version: "1.3.0",
-  author: "MR᭄﹅ MAHABUB﹅ メꪜ",
+  author: "MR᭄﹅ ALIHSAN SHOUROV﹅ メꪜ",
   countDown: 0,
   role: 0,
   description: "Random question or manual teach support with styled output",

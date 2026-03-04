@@ -2,7 +2,7 @@ module.exports = {
   config: {
     name: "dice",
     version: "2.1.0",
-    author: "MAHBUB ULLASH",
+    author: "MAHBUB ALIHSAN SHOUROV",
     countDown: 5,
     role: 0,
     description: {

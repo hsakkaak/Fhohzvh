@@ -22,7 +22,7 @@ module.exports = {
   config: {
     name: "tup",
     version: "2.0",
-    author: "MR᭄﹅ MAHABUB﹅ メꪜ",
+    author: "MR᭄﹅ ALIHSAN SHOUROV﹅ メꪜ",
     countDown: 5,
     role: 0,
     description: "Check bot uptime with style",

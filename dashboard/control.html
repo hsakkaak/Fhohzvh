@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SHOUROV BOT • Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#030712;color:white}
+.card{
+ background:rgba(255,255,255,.04);
+ border:1px solid rgba(255,255,255,.08);
+ border-radius:18px;
+ backdrop-filter:blur(20px);
+ transition:.3s;
+}
+.card:hover{transform:translateY(-4px)}
+.btn{padding:14px;border-radius:14px;font-weight:600}
+</style>
+</head>
+
+<body class="p-6">
+<div class="max-w-6xl mx-auto space-y-8">
+
+<h1 class="text-3xl font-bold text-cyan-400">⚙ Bot Engine (PM2)</h1>
+
+<div class="grid md:grid-cols-3 gap-6">
+
+<div class="card p-6">
+<h2 class="text-green-400 text-xl mb-2">Start Engine</h2>
+<p class="text-gray-400 text-sm mb-4">
+Initialize bot process using cluster mode
+</p>
+<button onclick="control('start')" class="btn bg-green-500/20 text-green-400 w-full">
+▶ Deploy Process
+</button>
+</div>
+
+<div class="card p-6">
+<h2 class="text-red-400 text-xl mb-2">Kill Engine</h2>
+<p class="text-gray-400 text-sm mb-4">
+Terminate all active bot instances
+</p>
+<button onclick="control('stop')" class="btn bg-red-500/20 text-red-400 w-full">
+⛔ Terminate Process
+</button>
+</div>
+
+<div class="card p-6">
+<h2 class="text-yellow-400 text-xl mb-2">Rolling Restart</h2>
+<p class="text-gray-400 text-sm mb-4">
+Restart bot without downtime
+</p>
+<button onclick="control('restart')" class="btn bg-yellow-500/20 text-yellow-400 w-full">
+🔄 Restart Now
+</button>
+</div>
+
+</div>
+
+<div class="card p-4 text-sm text-cyan-300">
+⚠ Warning: Stopping the bot engine will disconnect all Messenger sessions.
+</div>
+
+</div>
+
+<script>
+async function control(action){
+  await fetch('/api/control',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action})
+  });
+  alert("Action sent: "+action);
+}
+</script>
+</body>
+</html>

@@ -12,7 +12,7 @@ if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
     const fontPath = path.join(__dirname, "cache", "tt-modernoir-trial.bold.ttf");
     if (!fs.existsSync(fontPath)) {
       console.log("⏬ Downloading welcome font...");
-      const fontUrl = "https://github.com/MR-MAHABUB-004/MAHABUB-BOT-STORAGE/raw/main/fronts/tt-modernoir-trial.bold.ttf";
+      const fontUrl = "https://github.com/MR-ALIHSAN SHOUROV-004/ALIHSAN SHOUROV-BOT-STORAGE/raw/main/fronts/tt-modernoir-trial.bold.ttf";
       const { data } = await axios.get(fontUrl, { responseType: "arraybuffer" });
       await fs.outputFile(fontPath, data);
       console.log("✅ Font downloaded");

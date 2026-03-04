@@ -2,7 +2,7 @@ module.exports = {
   config: {
     name: "slot2",
     version: "5.0",
-    author: "MAHBUB ULLASH",
+    author: "MAHBUB ALIHSAN SHOUROV",
     description: {
       role: 0,
       en: "Classic Slot Machine Game (Normal System)"

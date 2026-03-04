@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SHOUROV BOT • Settings</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body{background:#030712;color:white}
+.card{
+ background:rgba(255,255,255,.04);
+ border:1px solid rgba(255,255,255,.08);
+ border-radius:18px;
+ backdrop-filter:blur(20px);
+}
+.toggle{
+ width:52px;height:28px;border-radius:999px;
+ background:#374151;position:relative;cursor:pointer;
+}
+.toggle::after{
+ content:'';position:absolute;top:4px;left:4px;
+ width:20px;height:20px;border-radius:50%;
+ background:white;transition:.3s;
+}
+.active{background:#a855f7}
+.active::after{left:28px}
+</style>
+</head>
+
+<body class="p-6">
+<div class="max-w-5xl mx-auto space-y-6">
+
+<h1 class="text-3xl font-bold text-purple-400">⚙ Bot Settings</h1>
+
+<div class="grid md:grid-cols-2 gap-6">
+
+<div class="card p-6 flex justify-between items-center">
+<div>
+<h2>AUTO TIME</h2>
+<p class="text-gray-400 text-sm">Automatically update bot timing</p>
+</div>
+<div class="toggle active"></div>
+</div>
+
+<div class="card p-6 flex justify-between items-center">
+<div>
+<h2>ADMIN ONLY</h2>
+<p class="text-gray-400 text-sm">Restrict bot to admins only</p>
+</div>
+<div class="toggle"></div>
+</div>
+
+<div class="card p-6 flex justify-between items-center">
+<div>
+<h2>VIDEO DOWNLOADER</h2>
+<p class="text-gray-400 text-sm">Enable FB / Insta downloads</p>
+</div>
+<div class="toggle active"></div>
+</div>
+
+<div class="card p-6 flex justify-between items-center">
+<div>
+<h2>AUTO CAPTION</h2>
+<p class="text-gray-400 text-sm">Generate captions for media</p>
+</div>
+<div class="toggle active"></div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+document.querySelectorAll('.toggle').forEach(t=>{
+ t.onclick=()=>t.classList.toggle('active');
+});
+</script>
+
+</body>
+</html>

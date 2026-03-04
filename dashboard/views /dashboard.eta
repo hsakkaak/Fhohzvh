@@ -13,7 +13,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="/images/CYBER-ULLASH.png" alt="Bot Logo" width="40" height="40" class="me-2">
+            <img src="/images/CYBER-ALIHSAN SHOUROV.png" alt="Bot Logo" width="40" height="40" class="me-2">
             <%= it.config.nickNameBot %> Dashboard
         </a>
         <div class="navbar-nav ms-auto">

@@ -5,7 +5,7 @@ module.exports = {
     name: "imgur",
     aliases: ["imagegur","imgbb"],
     version: "1.0",
-    author: "MR᭄﹅ MAHABUB﹅ メꪜ",
+    author: "MR᭄﹅ ALIHSAN SHOUROV﹅ メꪜ",
     countDown: 0,
     role: 0,
     shortDescription: "Upload an image to Imgur",

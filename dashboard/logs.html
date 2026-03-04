@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Logs | SHOUROV-BOT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background:#020617;
+      color:#22d3ee;
+      font-family: monospace;
+    }
+    .log {
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body class="p-6">
+  <h1 class="text-2xl font-bold mb-4 text-cyan-400">📜 Bot Logs</h1>
+
+  <div id="logs" class="log bg-black/60 p-4 rounded-xl border border-cyan-400/30 h-[80vh] overflow-y-auto">
+    Connecting to log stream...
+  </div>
+
+  <script>
+    async function loadLogs() {
+      try {
+        const res = await fetch("/api/logs");
+        const text = await res.text();
+        document.getElementById("logs").innerText = text;
+      } catch (e) {
+        document.getElementById("logs").innerText = "Failed to load logs";
+      }
+    }
+
+    setInterval(loadLogs, 3000);
+    loadLogs();
+  </script>
+</body>
+</html>
