@@ -1,21 +1,5 @@
 {
-  "0": "C",
-  "1": "Y",
-  "2": "B",
-  "3": "E",
-  "4": "R",
-  "5": " ",
-  "6": "U",
-  "7": "L",
-  "8": "L",
-  "9": "A",
-  "10": "S",
-  "11": "H",
-  "12": " ",
-  "13": "C",
-  "14": "B",
-  "15": "C",
-  "mainThreadId": "6601227983317461",
+  "mainThreadId": "",
   "notesMainThreadId": "",
   "botAccount": {
     "email": "",
@@ -34,38 +18,22 @@
   "prefix": "!",
   "usePrefix": {
     "enable": true,
-    "adminUsePrefix": {
-      "enable": true,
-      "specificUids": [
-        "100082395531611",
-        "100015168369582"
-      ]
-    }
+    "adminUsePrefix": true
   },
   "adminOnly": {
     "enable": false,
-    "ignoreCommand": [
-      "61588161951831",
-      "61588161951831"
-    ]
+    "ignoreCommand": []
   },
   "adminBot": [
-    "61588161951831",
     "61588161951831"
   ],
   "whiteListMode": {
     "enable": false,
-    "whiteListIds": [
-      "61588161951831",
-      "61588161951831"
-    ]
+    "whiteListIds": []
   },
   "whiteListModeThread": {
     "enable": false,
-    "whiteListThreadIds": [
-      "6601227983317461",
-      "9832241216832773"
-    ]
+    "whiteListThreadIds": []
   },
   "showLoginTitle": false,
   "database": {
@@ -115,50 +83,6 @@
     "delayAfterStopListening": 2000,
     "logNoti": false
   },
-  "botStartupNotification": {
-    "enable": false,
-    "sendToThreads": {
-      "enable": true,
-      "threadIds": []
-    },
-    "sendToAdmin": {
-      "enable": false,
-      "adminId": ""
-    },
-    "message": "🤖 Bot is now online and ready to serve!"
-  },
-  "threadApproval": {
-    "enable": false,
-    "adminNotificationThreads": [],
-    "autoApproveExisting": true,
-    "sendNotifications": true,
-    "sendThreadMessage": true,
-    "autoApprovedThreads": []
-  },
-  "botLogging": {
-    "enable": false,
-    "sendToThreads": true,
-    "logThreadIds": [],
-    "sendToAdmins": false,
-    "silentOnDisabledThreads": true,
-    "logBotAdded": false,
-    "logBotKicked": true
-  },
-  "antiReact": {
-    "enable": true,
-    "reactByUnsend": {
-      "enable": true,
-      "emojis": [
-        "👍",
-        "😤"
-      ]
-    },
-    "reactByRemove": {
-      "enable": true,
-      "emoji": "⚠️"
-    },
-    "onlyAdminBot": true
-  },
   "hideNotiMessage": {
     "commandNotFound": false,
     "adminOnly": false,
@@ -190,3 +114,4 @@
     "autoMarkDelivery": false,
     "autoReconnect": false
   }
+}
