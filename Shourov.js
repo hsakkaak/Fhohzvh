@@ -1,16 +1,27 @@
-process.on('unhandledRejection', error => {
-    console.error('Unhandled Rejection:', error);
-});
-process.on('uncaughtException', error => {
-    console.error('Uncaught Exception:', error);
-});
+/**
+ * @author NTKhang
+ * ! The source code is written by NTKhang, please don't change the author's name everywhere. Thank you for using
+ * ! Official source code: https://github.com/ntkhang03/Goat-Bot-V2
+ * ! If you do not download the source code from the above address, you are using an unknown version and at risk of having your account hacked
+ *
+ * English:
+ * ! Please do not change the below code, it is very important for the project.
+ * It is my motivation to maintain and develop the project for free.
+ * ! If you change it, you will be banned forever
+ * Thank you for using
+ *
+ * Vietnamese:
+ * ! Vui lòng không thay đổi mã bên dưới, nó rất quan trọng đối với dự án.
+ * Nó là động lực để tôi duy trì và phát triển dự án miễn phí.
+ * ! Nếu thay đổi nó, bạn sẽ bị cấm vĩnh viễn
+ * Cảm ơn bạn đã sử dụng
+ */
 
-console.log("SHOUROV.JS STARTING...");
+process.on('unhandledRejection', error => console.log(error));
+process.on('uncaughtException', error => console.log(error));
 
 const axios = require("axios");
 const fs = require("fs-extra");
-const google = require("googleapis").google;
-const nodemailer = require("nodemailer");
 const { execSync } = require('child_process');
 const log = require('./logger/log.js');
 const path = require("path");
@@ -18,22 +29,24 @@ const path = require("path");
 process.env.BLUEBIRD_W_FORGOTTEN_RETURN = 0; // Disable warning: "Warning: a promise was created in a handler but was not returned from it"
 
 function validJSON(pathDir) {
-    try {
-        if (!fs.existsSync(pathDir))
-            throw new Error(`File "${pathDir}" not found`);
-        JSON.parse(fs.readFileSync(pathDir, 'utf-8'));
-        return true;
-    }
-    catch (err) {
-        throw new Error(err.message);
-    }
+        try {
+                if (!fs.existsSync(pathDir))
+                        throw new Error(`File "${pathDir}" not found`);
+                execSync(`npx jsonlint "${pathDir}"`, { stdio: 'pipe' });
+                return true;
+        }
+        catch (err) {
+                let msgError = err.message;
+                msgError = msgError.split("\n").slice(1).join("\n");
+                const indexPos = msgError.indexOf("    at");
+                msgError = msgError.slice(0, indexPos != -1 ? indexPos - 1 : msgError.length);
+                throw new Error(msgError);
+        }
 }
 
-const { NODE_ENV } = process.env;
-const dirConfig = path.normalize(`${__dirname}/Shourov${['production', 'development'].includes(NODE_ENV) ? '.dev.json' : '.json'}`);
-const dirConfigCommands = path.normalize(`${__dirname}/configCommands${['production', 'development'].includes(NODE_ENV) ? '.dev.json' : '.json'}`);
-const dirAccount = path.normalize(`${__dirname}/${process.env.ACCOUNT_FILE || 'Shourov.dev.txt'}`);
-
+const dirConfig = path.normalize(`${__dirname}/Shourov.json`);
+const dirConfigCommands = path.normalize(`${__dirname}/configCommands.json`);
+const dirAccount = path.normalize(`${__dirname}/Shourov.txt`);
 
 for (const pathDir of [dirConfig, dirConfigCommands]) {
         try {
@@ -45,25 +58,6 @@ for (const pathDir of [dirConfig, dirConfigCommands]) {
         }
 }
 const config = require(dirConfig);
-
-// Inject environment variables if they exist
-if (process.env.MONGODB_URI) config.database.uriMongodb = process.env.MONGODB_URI;
-if (process.env.FB_EMAIL) config.facebookAccount.email = process.env.FB_EMAIL;
-if (process.env.FB_PASS) config.facebookAccount.password = process.env.FB_PASS;
-if (process.env.PREFIX) config.prefix = process.env.PREFIX;
-
-// Ensure bot only runs if devUsers is present and contains authorized ID
-if (!config.devUsers || config.devUsers.length === 0) {
-    log.warn("AUTH", "No devUsers found in config. Dashboard will still start, but bot functions may be limited.");
-    // process.exit(0); // Don't exit, let dashboard run
-} else {
-    log.info("AUTH", `Loaded ${config.devUsers.length} devUsers.`);
-}
-
-log.info("SYSTEM", "Starting bot initialization...");
-console.log("DEBUG: Shourov.js is running");
-
-
 if (config.whiteListMode?.whiteListIds && Array.isArray(config.whiteListMode.whiteListIds))
         config.whiteListMode.whiteListIds = config.whiteListMode.whiteListIds.map(id => id.toString());
 const configCommands = require(dirConfigCommands);
@@ -142,11 +136,6 @@ global.temp = {
         createThreadData: [],
         createUserData: [],
         createThreadDataError: [], // Can't get info of groups with instagram members
-        filesOfGoogleDrive: {
-                arraybuffer: {},
-                stream: {},
-                fileNames: {}
-        },
         contentScripts: {
                 cmds: {},
                 events: {}
@@ -203,14 +192,14 @@ const getText = global.utils.getText;
 if (config.autoRestart) {
         const time = config.autoRestart.time;
         if (!isNaN(time) && time > 0) {
-                utils.log.info("AUTO RESTART", getText("Goat", "autoRestart1", utils.convertTime(time, true)));
+                utils.log.info("AUTO RESTART", getText("Shourov", "autoRestart1", utils.convertTime(time, true)));
                 setTimeout(() => {
                         utils.log.info("AUTO RESTART", "Restarting...");
                         process.exit(2);
                 }, time);
         }
         else if (typeof time == "string" && time.match(/^((((\d+,)+\d+|(\d+(\/|-|#)\d+)|\d+L?|\*(\/\d+)?|L(-\d+)?|\?|[A-Z]{3}(-[A-Z]{3})?) ?){5,7})$/gmi)) {
-                utils.log.info("AUTO RESTART", getText("Goat", "autoRestart2", time));
+                utils.log.info("AUTO RESTART", getText("Shourov", "autoRestart2", time));
                 const cron = require("node-cron");
                 cron.schedule(time, () => {
                         utils.log.info("AUTO RESTART", "Restarting...");
@@ -220,71 +209,10 @@ if (config.autoRestart) {
 }
 
 (async () => {
-        // ———————————————— SETUP MAIL ———————————————— //
-        const { gmailAccount } = config.credentials;
-        const { email, clientId, clientSecret, refreshToken } = gmailAccount;
-        const OAuth2 = google.auth.OAuth2;
-        const OAuth2_client = new OAuth2(clientId, clientSecret);
-        OAuth2_client.setCredentials({ refresh_token: refreshToken });
-        let accessToken;
-        try {
-                accessToken = await OAuth2_client.getAccessToken();
-        }
-        catch (err) {
-                throw new Error(getText("Goat", "googleApiTokenExpired"));
-        }
-        const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                service: 'Gmail',
-                auth: {
-                        type: 'OAuth2',
-                        user: email,
-                        clientId,
-                        clientSecret,
-                        refreshToken,
-                        accessToken
-                }
-        });
-
-        async function sendMail({ to, subject, text, html, attachments }) {
-                const transporter = nodemailer.createTransport({
-                        host: 'smtp.gmail.com',
-                        service: 'Gmail',
-                        auth: {
-                                type: 'OAuth2',
-                                user: email,
-                                clientId,
-                                clientSecret,
-                                refreshToken,
-                                accessToken
-                        }
-                });
-                const mailOptions = {
-                        from: email,
-                        to,
-                        subject,
-                        text,
-                        html,
-                        attachments
-                };
-                const info = await transporter.sendMail(mailOptions);
-                return info;
-        }
-
-        global.utils.sendMail = sendMail;
-        global.utils.transporter = transporter;
-
         // ———————————————— CHECK VERSION ———————————————— //
-        console.log("Checking version...");
-        let version;
-        try {
-            const response = await axios.get("https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/package.json", { timeout: 5000 });
-            version = response.data.version;
-        } catch (e) {
-            console.log("Failed to check version, skipping...");
-        }
+        const { data: { version } } = await axios.get("https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/package.json");
         const currentVersion = require("./package.json").version;
-        if (version && compareVersion(version, currentVersion) === 1)
+        if (compareVersion(version, currentVersion) === 1)
                 utils.log.master("NEW VERSION", getText(
                         "Goat",
                         "newVersionDetected",
@@ -292,14 +220,8 @@ if (config.autoRestart) {
                         colors.hex("#eb6a07", version),
                         colors.hex("#eb6a07", "node update")
                 ));
-        // —————————— CHECK FOLDER GOOGLE DRIVE —————————— //
-        console.log("Checking Google Drive folder...");
-        const parentIdGoogleDrive = await utils.drive.checkAndCreateParentFolder("GoatBot");
-        utils.drive.parentID = parentIdGoogleDrive;
-        console.log("Loading login...");
         // ———————————————————— LOGIN ———————————————————— //
-console.log("LOGIN FILE RUNNING...");
-        require(`./bot/login/login${NODE_ENV === 'development' ? '.dev.js' : '.js'}`);
+        require('./bot/login/login.js');
 })();
 
 function compareVersion(version1, version2) {
