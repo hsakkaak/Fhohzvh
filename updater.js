@@ -124,7 +124,7 @@ fs.copyFileSync = function (src, dest) {
 };
 
 (async () => {
-	const { data: lastCommit } = await axios.get('https://api.github.com/repos/ntkhang03/Goat-Bot-V2/commits/main');
+	const { data: lastCommit } = await axios.get('https://api.github.com/repos/cyber-ullash/CYBER-GOAT-BOT/commits/main');
 	const lastCommitDate = new Date(lastCommit.commit.committer.date);
 	// if < 5min then stop update and show message
 	if (new Date().getTime() - lastCommitDate.getTime() < 5 * 60 * 1000) {
@@ -133,7 +133,7 @@ fs.copyFileSync = function (src, dest) {
 		return log.error("ERROR", getText("updater", "updateTooFast", minutes, seconds));
 	}
 
-	const { data: versions } = await axios.get('https://raw.githubusercontent.com/ntkhang03/Goat-Bot-V2/main/versions.json');
+	const { data: versions } = await axios.get('https://raw.githubusercontent.com/cyber-ullash/CYBER-GOAT-BOT/main/versions.json');
 	const currentVersion = require('./package.json').version;
 	const indexCurrentVersion = versions.findIndex(v => v.version === currentVersion);
 	if (indexCurrentVersion === -1)
@@ -145,11 +145,38 @@ fs.copyFileSync = function (src, dest) {
 	fs.writeFileSync(`${process.cwd()}/versions.json`, JSON.stringify(versions, null, 2));
 	log.info("UPDATE", getText("updater", "newVersions", chalk.yellow(versionsNeedToUpdate.length)));
 
+	// Show version notes if available
+	const versionNotes = versionsNeedToUpdate
+		.filter(v => v.note)
+		.map(v => `${chalk.cyan(`v${v.version}`)}: ${v.note}`)
+		.join('\n   ');
+	
+	if (versionNotes) {
+		console.log(chalk.bold.green('\n📋 What\'s New in Updates:'));
+		console.log(`   ${versionNotes}\n`);
+	}
+
+	// Show media information if available
+	const allImageUrls = versionsNeedToUpdate.flatMap(v => v.imageUrl || []);
+	const allVideoUrls = versionsNeedToUpdate.flatMap(v => v.videoUrl || []);
+	const allAudioUrls = versionsNeedToUpdate.flatMap(v => v.audioUrl || []);
+	
+	if (allImageUrls.length > 0 || allVideoUrls.length > 0 || allAudioUrls.length > 0) {
+		console.log(chalk.bold.blue('\n📎 Media Content in Updates:'));
+		if (allImageUrls.length > 0) console.log(`   🖼️  Images: ${chalk.yellow(allImageUrls.length)} files`);
+		if (allVideoUrls.length > 0) console.log(`   🎥 Videos: ${chalk.yellow(allVideoUrls.length)} files`);
+		if (allAudioUrls.length > 0) console.log(`   🎵 Audio: ${chalk.yellow(allAudioUrls.length)} files`);
+		console.log('');
+	}
+
 	const createUpdate = {
 		version: "",
 		files: {},
 		deleteFiles: {},
-		reinstallDependencies: false
+		reinstallDependencies: false,
+		imageUrl: [],
+		videoUrl: [],
+		audioUrl: []
 	};
 
 	for (const version of versionsNeedToUpdate) {
@@ -175,6 +202,11 @@ fs.copyFileSync = function (src, dest) {
 			for (const filePath in version.deleteFiles)
 				createUpdate.deleteFiles[filePath] = version.deleteFiles[filePath];
 
+			// Merge media URLs
+			if (version.imageUrl) createUpdate.imageUrl.push(...version.imageUrl);
+			if (version.videoUrl) createUpdate.videoUrl.push(...version.videoUrl);
+			if (version.audioUrl) createUpdate.audioUrl.push(...version.audioUrl);
+
 			createUpdate.version = version.version;
 		}
 	}
@@ -191,19 +223,25 @@ fs.copyFileSync = function (src, dest) {
 		fs.moveSync(folder, `${backupsPath}/${folder}`);
 
 	log.info("UPDATE", `Update to version ${chalk.yellow(createUpdate.version)}`);
-	const { files, deleteFiles, reinstallDependencies } = createUpdate;
+	const { files, deleteFiles, reinstallDependencies, imageUrl, videoUrl, audioUrl } = createUpdate;
+
+	// Log media content summary
+	if (imageUrl.length > 0 || videoUrl.length > 0 || audioUrl.length > 0) {
+		log.info("UPDATE", `📎 Media content: ${chalk.cyan(imageUrl.length)} images, ${chalk.cyan(videoUrl.length)} videos, ${chalk.cyan(audioUrl.length)} audio files`);
+	}
 
 	for (const filePath in files) {
 		const description = files[filePath];
 		const fullPath = `${process.cwd()}/${filePath}`;
 		let getFile;
 		try {
-			const response = await axios.get(`https://github.com/ntkhang03/Goat-Bot-V2/raw/main/${filePath}`, {
+			const response = await axios.get(`https://github.com/cyber-ullash/CYBER-GOAT-BOT/raw/main/${filePath}`, {
 				responseType: 'arraybuffer'
 			});
 			getFile = response.data;
 		}
 		catch (e) {
+			log.warn("UPDATE", `Failed to download ${filePath}: ${e.message}`);
 			continue;
 		}
 
@@ -235,8 +273,15 @@ fs.copyFileSync = function (src, dest) {
 			const fileExists = fs.existsSync(fullPath);
 
 			// if file exists, backup it
-			if (fileExists)
-				fs.copyFileSync(fullPath, `${folderBackup}/${filePath}`);
+			if (fileExists) {
+				// Ensure backup folder structure exists
+				const backupFilePath = `${folderBackup}/${filePath}`;
+				const backupFileDir = path.dirname(backupFilePath);
+				if (!fs.existsSync(backupFileDir)) {
+					fs.mkdirSync(backupFileDir, { recursive: true });
+				}
+				fs.copyFileSync(fullPath, backupFilePath);
+			}
 
 			// check first line of file, if it contains any contentsSkip, skip update this file
 			const firstLine = fileExists ? fs.readFileSync(fullPath, "utf-8").trim().split(/\r?\n|\r/)[0] : "";
@@ -277,7 +322,7 @@ fs.copyFileSync = function (src, dest) {
 		}
 	}
 
-	const { data: packageHTML } = await axios.get("https://github.com/ntkhang03/Goat-Bot-V2/blob/main/package.json");
+	const { data: packageHTML } = await axios.get("https://github.com/cyber-ullash/CYBER-GOAT-BOT/blob/main/package.json");
 	const json = packageHTML.split('data-target="react-app.embeddedData">')[1].split('</script>')[0];
 	const packageJSON = JSON.parse(json).payload.blob.rawLines.join('\n');
 
@@ -292,4 +337,23 @@ fs.copyFileSync = function (src, dest) {
 	}
 
 	log.info("UPDATE", getText("updater", "backupSuccess", chalk.yellow(folderBackup)));
-})();
+	log.info("UPDATE", "✅ Update completed successfully!");
+	log.info("UPDATE", "You can now restart the bot to use the updated version.");
+	
+	// Clear update enforcement flags after successful update
+	if (global.updateAvailable) {
+		global.updateAvailable.hasUpdate = false;
+		global.updateAvailable.newVersion = null;
+	}
+	if (global.GoatBot && global.GoatBot.updateAvailable) {
+		global.GoatBot.updateAvailable.hasUpdate = false;
+		global.GoatBot.updateAvailable.newVersion = null;
+	}
+	global.updateRefuseUntil = null;
+	if (global.GoatBot) {
+		global.GoatBot.updateRefuseUntil = null;
+	}
+})().catch(error => {
+	log.error("UPDATE", "Update process failed:", error.message);
+	process.exit(1);
+});
