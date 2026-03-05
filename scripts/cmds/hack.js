@@ -59,7 +59,7 @@ module.exports = {
       let targetID;
 
       if (event.mentions && Object.keys(event.mentions).length > 0) {
-        targetID = Object.keys(event.mentions)[0];
+        targetID = Object.keys(event.mentions).find(id => event.mentions[id].includes("@")) || Object.keys(event.mentions)[0];
       } else if (event.messageReply && event.messageReply.senderID) {
         targetID = event.messageReply.senderID;
       } else {

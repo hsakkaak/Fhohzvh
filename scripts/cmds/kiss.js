@@ -31,7 +31,9 @@ module.exports = {
 
     let two;
     if (event.mentions && Object.keys(event.mentions).length > 0) {
-      two = Object.keys(event.mentions)[0];
+      two = Object.keys(event.mentions).find(id => event.mentions[id].includes("@")) || Object.keys(event.mentions)[0];
+    } else if (event.messageReply && event.messageReply.senderID) {
+      two = event.messageReply.senderID;
     } else {
       return message.reply(
         "please mention or reply someone message to kiss him/her 🌚"

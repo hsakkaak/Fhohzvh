@@ -38,6 +38,7 @@ module.exports = async (api) => {
         }));
 
         // public folder 
+        app.use("/public", express.static(`${process.cwd()}/public`));
         app.use("/css", express.static(`${__dirname}/css`));
         app.use("/js", express.static(`${__dirname}/js`));
         app.use("/images", express.static(`${__dirname}/images`));
