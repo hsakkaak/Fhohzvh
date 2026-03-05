@@ -188,7 +188,7 @@ module.exports.onChat = async ({
             const randomReplies = ["😚", "Yes 😀, I am here", "What's up?", "Bolo jaan ki korte panmr jonno"];
             if (!arr) {
         return await api.sendMessage(randomReplies[Math.floor(Math.random() * randomReplies.length)], event.threadID, (error, info) => {
-                    if (!info) message.reply("info obj not found")
+                    if (error || !info) return;
                     global.GoatBot.onReply.set(info.messageID, {
                         commandName: this.config.name,
                         type: "reply",
@@ -199,6 +199,7 @@ module.exports.onChat = async ({
             }
             const a = (await axios.get(`${await baseApiUrl()}/baby?text=${encodeURIComponent(arr)}&senderID=${event.senderID}&font=1`)).data.reply;
            return await api.sendMessage(a, event.threadID, (error, info) => {
+                if (error || !info) return;
                 global.GoatBot.onReply.set(info.messageID, {
                     commandName: this.config.name,
                     type: "reply",
