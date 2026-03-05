@@ -1,71 +1,51 @@
 const fs = require("fs-extra");
 const { createCanvas, loadImage } = require("canvas");
-const axios = require("axios");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "kiss",
-    version: "1.0.13",
-    author: "Rakib Adil",
+    version: "2.0.0",
+    author: "Alihsan Shourov",
     countDown: 5,
     role: 0,
-    longDescription: "{p}kiss @mention or reply someone you want to kiss that person 😚",
-    category: "funny",
-    guide: "{p}kiss and mention someone you want to kiss 🥴",
-    usePrefix: true,
-    premium: false,
-    notes: "If you change the author then the command will not work and not usable"
+    description: "Kiss someone by mention or reply 😘",
+    category: "fun",
+    guide: "{p}kiss @mention OR reply someone"
   },
 
-  onStart: async function ({ api, message, event }) {
-    const owner = module.exports.config;
-    const eAuth = "UmFraWIgQWRpbA==";
-    const dAuth = Buffer.from(eAuth, "base64").toString("utf8");
-
-    if (owner.author !== dAuth)
-      return message.reply(
-        "you've changed the author name, please set it to default (Rakib Adil) otherwise this command will not work.🙂"
-      );
-
-    const one = event.senderID;
-
-    let two;
-    if (event.mentions && Object.keys(event.mentions).length > 0) {
-      two = Object.keys(event.mentions).find(id => event.mentions[id].includes("@")) || Object.keys(event.mentions)[0];
-    } else if (event.messageReply && event.messageReply.senderID) {
-      two = event.messageReply.senderID;
-    } else {
-      return message.reply(
-        "please mention or reply someone message to kiss him/her 🌚"
-      );
-    }
-
+  onStart: async function ({ message, event, usersData }) {
     try {
-      const avatar1Data = (
-        await axios.get(
-          `https://graph.facebook.com/${one}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
-          { responseType: "arraybuffer" }
-        )
-      ).data;
+      const { senderID } = event;
 
-      const avatar2Data = (
-        await axios.get(
-          `https://graph.facebook.com/${two}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
-          { responseType: "arraybuffer" }
-        )
-      ).data;
+      // ===== Get Target =====
+      let targetID =
+        event.messageReply?.senderID ||
+        Object.keys(event.mentions || {})[0];
 
-      const avatar1 = await loadImage(avatar1Data);
-      const avatar2 = await loadImage(avatar2Data);
+      if (!targetID) {
+        return message.reply(
+          "❌ Please mention or reply someone to kiss 😘"
+        );
+      }
+
+      // ===== Get Avatars =====
+      const avatarURL1 = await usersData.getAvatarUrl(senderID);
+      const avatarURL2 = await usersData.getAvatarUrl(targetID);
 
       const canvas = createCanvas(950, 850);
       const ctx = canvas.getContext("2d");
 
+      // Background
       const background = await loadImage(
         "https://files.catbox.moe/6qg782.jpg"
       );
       ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
+      const avatar1 = await loadImage(avatarURL1);
+      const avatar2 = await loadImage(avatarURL2);
+
+      // Draw user 1
       ctx.save();
       ctx.beginPath();
       ctx.arc(725, 250, 85, 0, Math.PI * 2);
@@ -74,6 +54,7 @@ module.exports = {
       ctx.drawImage(avatar1, 640, 170, 170, 170);
       ctx.restore();
 
+      // Draw user 2
       ctx.save();
       ctx.beginPath();
       ctx.arc(175, 370, 85, 0, Math.PI * 2);
@@ -82,8 +63,14 @@ module.exports = {
       ctx.drawImage(avatar2, 90, 280, 170, 170);
       ctx.restore();
 
-      const outputPath = `${__dirname}/tmp/kiss_image.png`;
-      fs.writeFileSync(outputPath, canvas.toBuffer("image/png"));
+      // Temp folder
+      const tmpDir = path.join(__dirname, "tmp");
+      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+
+      const outputPath = path.join(tmpDir, `kiss_${Date.now()}.png`);
+      const buffer = canvas.toBuffer("image/png");
+
+      fs.writeFileSync(outputPath, buffer);
 
       message.reply(
         {
@@ -92,9 +79,10 @@ module.exports = {
         },
         () => fs.unlinkSync(outputPath)
       );
+
     } catch (error) {
       console.error(error);
-      message.reply("an error occurred, please try again later.🐸");
+      message.reply("⚠️ Something went wrong. Try again later.");
     }
   }
 };
