@@ -26,7 +26,9 @@
   ],
   "whiteListMode": {
     "enable": false,
-    "whiteListIds": [61588161951831],
+    "whiteListIds": [
+      "61588161951831"
+    ],
     "notes": "if you enable this feature, only the ids in the whiteListIds section can use the bot"
   },
   "nickNameBot": "Your Baby",
@@ -41,7 +43,7 @@
   },
   "timeZone": "Asia/Dhaka",
   "credentials": {
-  "gmailAccount": {
+    "gmailAccount": {
       "email": "mpk852546@gmail.com",
       "clientId": "468637297192-06rlphmj6lohjaj87l9f2faugjpvjo2m.apps.googleusercontent.com",
       "clientSecret": "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",
@@ -56,11 +58,11 @@
   "dashBoard": {
     "enable": true,
     "expireVerifyCode": 300000,
-    "port": 3001
+    "port": 5000
   },
   "serverUptime": {
     "enable": false,
-    "port": 3001,
+    "port": 5000,
     "socket": {
       "enable": true,
       "channelName": "uptime",
