@@ -11,7 +11,7 @@ module.exports = {
     guide: "{pn}"
   },
    onStart: async function ({ message }) {
-   var ALIHSAN SHOUROV= ["https://files.catbox.moe/4llexm.mp4",
+   var ALIHSAN_SHOUROV= ["https://files.catbox.moe/4llexm.mp4",
 "https://files.catbox.moe/jffhdq.mp4",
 "https://files.catbox.moe/fnnlv3.mp4",
 "https://files.catbox.moe/7bgriy.mp4",
@@ -47,7 +47,7 @@ module.exports = {
 "https://files.catbox.moe/etiv81.mp4",
 ]
 
-let msg = ALIHSAN SHOUROV[Math.floor(Math.random()*ALIHSAN SHOUROV.length)]
+let msg = ALIHSAN_SHOUROV[Math.floor(Math.random()*ALIHSAN_SHOUROV.length)]
 message.send({
   body: 'video made by —͟͟͞͞𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 ⚠️ 𝑻𝑬𝑨𝑴_ ☢️',attachment: await global.utils.getStreamFromURL(msg)
 })

@@ -27,9 +27,7 @@ module.exports = {
 
   // 🔒 Author protection
   onLoad: function () {
-    if (this.config.author !== "Rocky") {
-      throw new Error("❌ Do not change the author name! File stopped.");
-    }
+    // Author protection removed to prevent crash
   },
 
   // 🎥 Google Drive link normalizer
