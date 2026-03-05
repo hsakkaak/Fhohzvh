@@ -1,44 +1,80 @@
 const DIG = require("discord-image-generation");
 const fs = require("fs-extra");
+const path = require("path");
 
 module.exports = {
- config: {
- name: "slap",
- version: "1.1",
- author: "Chitron Bhattacharjee",
- countDown: 5,
- role: 0,
- shortDescription: "Batslap image",
- longDescription: "Batslap image",
- category: "𝗙𝗨𝗡 & 𝗚𝗔𝗠𝗘",
- guide: {
- en: " {pn} @tag"
- }
- },
+  config: {
+    name: "slap",
+    version: "2.0",
+    author: "Alihsan Shourov",
+    countDown: 5,
+    role: 0,
+    shortDescription: "Slap someone",
+    longDescription: "Slap image with reply/mention/UID support",
+    category: "fun",
+    guide: "{pn} @mention / reply / UID"
+  },
 
- langs: {
- vi: {
- noTag: "Bạn phải tag người bạn muốn tát"
- },
- en: {
- noTag: "যারে থাপড়াবি ওরে মেনশন দে বলদ 🤓"
- }
- },
+  langs: {
+    en: {
+      noTag: "😒 Whom are you slapping? Reply / Mention / UID needed!"
+    }
+  },
 
- onStart: async function ({ event, message, usersData, args, getLang }) {
- const uid1 = event.senderID;
- const uid2 = Object.keys(event.mentions)[0];
- if (!uid2)
- return message.reply(getLang("noTag"));
- const avatarURL1 = await usersData.getAvatarUrl(uid1);
- const avatarURL2 = await usersData.getAvatarUrl(uid2);
- const img = await new DIG.Batslap().getImage(avatarURL1, avatarURL2);
- const pathSave = `${__dirname}/tmp/${uid1}_${uid2}Batslap.png`;
- fs.writeFileSync(pathSave, Buffer.from(img));
- const content = args.join(' ').replace(Object.keys(event.mentions)[0], "");
- message.reply({
- body: `${(content || "Bópppp 😵‍💫😵")}`,
- attachment: fs.createReadStream(pathSave)
- }, () => fs.unlinkSync(pathSave));
- }
+  onStart: async function ({
+    event,
+    message,
+    usersData,
+    args,
+    getLang,
+    resolveTargetID
+  }) {
+    try {
+      const senderID = event.senderID;
+
+      // ===== Target Detect =====
+      let targetID = resolveTargetID(args);
+
+      // UID support
+      if (!targetID && args[0] && !isNaN(args[0])) {
+        targetID = args[0];
+      }
+
+      if (!targetID)
+        return message.reply(getLang("noTag"));
+
+      // ===== Avatar URL =====
+      const avatarURL1 = await usersData.getAvatarUrl(senderID);
+      const avatarURL2 = await usersData.getAvatarUrl(targetID);
+
+      // ===== Generate Slap Image =====
+      const img = await new DIG.Batslap().getImage(
+        avatarURL1,
+        avatarURL2
+      );
+
+      // ===== Temp Folder =====
+      const tmpDir = path.join(__dirname, "tmp");
+      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+
+      const filePath = path.join(
+        tmpDir,
+        `slap_${Date.now()}.png`
+      );
+
+      fs.writeFileSync(filePath, Buffer.from(img));
+
+      message.reply(
+        {
+          body: "Bópppp 😵‍💫😵",
+          attachment: fs.createReadStream(filePath)
+        },
+        () => fs.unlinkSync(filePath)
+      );
+
+    } catch (err) {
+      console.error("SLAP ERROR:", err);
+      message.reply("⚠️ Slap command failed.");
+    }
+  }
 };
