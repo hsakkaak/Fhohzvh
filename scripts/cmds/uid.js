@@ -6,11 +6,10 @@ const { createCanvas, loadImage } = require("canvas");
 module.exports = {
   config: {
     name: "uid",
-    version: "3.0",
-    author: "Shourov",
+    version: "3.1",
+    author: "Shourov Fix",
     countDown: 5,
     role: 0,
-    description: "UID animated banner",
     category: "info",
     guide: "{p}uid @mention | reply"
   },
@@ -27,22 +26,23 @@ module.exports = {
       const name = await usersData.getName(targetID);
       const avatarURL = await usersData.getAvatarUrl(targetID);
 
-      const width = 800;
-      const height = 400;
+      const width = 700;
+      const height = 350;
+
+      const cache = path.join(__dirname, "cache");
+      if (!fs.existsSync(cache))
+        fs.mkdirSync(cache, { recursive: true });
+
+      const filePath = path.join(cache, `uid_${Date.now()}.gif`);
 
       const encoder = new GIFEncoder(width, height);
-      const tmpDir = path.join(__dirname, "tmp");
+      const writeStream = fs.createWriteStream(filePath);
 
-      if (!fs.existsSync(tmpDir))
-        fs.mkdirSync(tmpDir, { recursive: true });
-
-      const filePath = path.join(tmpDir, `uid_${Date.now()}.gif`);
-
-      const stream = encoder.createWriteStream().pipe(fs.createWriteStream(filePath));
+      encoder.createReadStream().pipe(writeStream);
 
       encoder.start();
       encoder.setRepeat(0);
-      encoder.setDelay(80);
+      encoder.setDelay(90);
       encoder.setQuality(10);
 
       const canvas = createCanvas(width, height);
@@ -50,63 +50,65 @@ module.exports = {
 
       const avatar = await loadImage(avatarURL);
 
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 18; i++) {
 
-        // background
-        ctx.fillStyle = "#0a0a0a";
+        ctx.fillStyle = "#111";
         ctx.fillRect(0, 0, width, height);
 
-        // pulse glow circle
-        const radius = 100 + Math.sin(i * 0.3) * 20;
+        const pulse = 90 + Math.sin(i * 0.4) * 15;
 
         ctx.beginPath();
-        ctx.arc(200, 200, radius, 0, Math.PI * 2);
+        ctx.arc(150, 175, pulse, 0, Math.PI * 2);
         ctx.strokeStyle = "#00ffff";
-        ctx.lineWidth = 8;
+        ctx.lineWidth = 6;
         ctx.stroke();
 
-        // avatar
         ctx.save();
         ctx.beginPath();
-        ctx.arc(200, 200, 90, 0, Math.PI * 2);
+        ctx.arc(150, 175, 80, 0, Math.PI * 2);
         ctx.clip();
-        ctx.drawImage(avatar, 110, 110, 180, 180);
+        ctx.drawImage(avatar, 70, 95, 160, 160);
         ctx.restore();
 
-        // moving text
-        const move = Math.sin(i * 0.4) * 20;
+        const move = Math.sin(i * 0.3) * 15;
 
-        ctx.font = "bold 40px Arial";
+        ctx.font = "bold 32px Arial";
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(name, 400 + move, 180);
+        ctx.fillText(name, 320 + move, 150);
 
-        ctx.font = "bold 26px Arial";
+        ctx.font = "bold 24px Arial";
         ctx.fillStyle = "#00ff00";
-        ctx.fillText(`UID: ${targetID}`, 400 + move, 230);
+        ctx.fillText(`UID: ${targetID}`, 320 + move, 190);
 
-        ctx.font = "24px Arial";
+        ctx.font = "22px Arial";
         ctx.fillStyle = "#ffffff";
-        ctx.fillText(`facebook.com/${targetID}`, 400 + move, 280);
+        ctx.fillText(`facebook.com/${targetID}`, 320 + move, 230);
 
         encoder.addFrame(ctx);
       }
 
       encoder.finish();
 
-      return message.reply(
-        {
-          body:
-            `👤 Name: ${name}\n` +
-            `🆔 UID: ${targetID}\n` +
-            `🔗 https://facebook.com/${targetID}`,
-          attachment: fs.createReadStream(filePath)
-        },
-        () => fs.unlinkSync(filePath)
-      );
+      writeStream.on("finish", () => {
+
+        message.reply(
+          {
+            body:
+              `👤 Name: ${name}\n` +
+              `🆔 UID: ${targetID}\n` +
+              `🔗 https://facebook.com/${targetID}`,
+            attachment: fs.createReadStream(filePath)
+          },
+          () => fs.unlinkSync(filePath)
+        );
+
+      });
 
     } catch (err) {
+
       console.log("UID ERROR:", err);
-      return message.reply("❌ UID animation failed.");
+      message.reply("❌ UID animation failed.");
+
     }
 
   }
