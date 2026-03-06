@@ -18,7 +18,7 @@
       "deltaNext": 5
     },
     "rankup": {
-      "deltaNext": 5
+      "deltaNext": 2
     },
     "appstore": {
       "limitResult": 3
@@ -28,7 +28,7 @@
     },
     "uptime6": {},
     "resend": {
-      "deltaNext": 2
+      "deltaNext": 5
     },
     "notice": {
       "delayPerGroup": 250
