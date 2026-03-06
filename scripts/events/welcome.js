@@ -79,6 +79,9 @@ const threadData = await threadsData.get(threadID);
 
 const threadName = threadData.threadName || "Group";
 
+const memberCount =
+(await api.getThreadInfo(threadID)).participantIDs.length;
+
 const user = addedParticipants[0];
 
 const userName = user.fullName;
@@ -221,7 +224,28 @@ writeStream.on("finish", async ()=>{
 
 await api.sendMessage({
 
-body:`✨ Welcome ${userName} to ${threadName}`,
+body:`╔═══════ ✦ 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 ✦ ═══════╗
+
+🌸✨ Warm Welcome ${userName} ✨🌸
+to our beloved community
+
+🤖 ⟪ ${threadName} ⟫ 🤖
+
+💖 From the bottom of our hearts,
+we warmly welcome you here!
+
+👤 You are the ${memberCount}th member of this group
+
+━━━━━━━━━━━━━━━━━━
+
+🌟 We hope you enjoy your stay here
+💬 Feel free to chat, share and make friends
+
+━━━━━━━━━━━━━━━━━━
+
+👑 BOT OWNER: 𝐀𝐥𝐢𝐡𝐬𝐚𝐧 𝐒𝐡𝐨𝐮𝐫𝐨𝐯
+
+╚════════ ✦ ✦ ✦ ════════╝`,
 
 attachment:fs.createReadStream(filePath)
 
