@@ -5,8 +5,8 @@ const { createCanvas, loadImage } = require("canvas");
 module.exports = {
   config: {
     name: "top",
-    version: "3.2",
-    author: "alihsan Shourov",
+    version: "4.0",
+    author: "Shourov Fix",
     role: 0,
     category: "economy",
     guide: "{p}top"
@@ -26,55 +26,65 @@ module.exports = {
     const canvas = createCanvas(width,height);
     const ctx = canvas.getContext("2d");
 
-    ctx.fillStyle="#0f0f0f";
+    // background
+    ctx.fillStyle="#111";
     ctx.fillRect(0,0,width,height);
 
+    // title
     ctx.font="bold 40px Arial";
     ctx.fillStyle="#ffffff";
-    ctx.fillText("TOP RICHEST USERS",300,60);
+    ctx.textAlign="center";
+    ctx.fillText("TOP RICHEST USERS",width/2,60);
 
-    // Top 3 avatar
-    const avatar1 = await loadImage(await usersData.getAvatarUrl(top[0].userID));
-    const avatar2 = await loadImage(await usersData.getAvatarUrl(top[1].userID));
-    const avatar3 = await loadImage(await usersData.getAvatarUrl(top[2].userID));
-
-    const avatars = [avatar1,avatar2,avatar3];
+    const positions = [200,450,700];
 
     for(let i=0;i<3;i++){
 
-      const x = 150 + i*300;
+      const avatarURL = await usersData.getAvatarUrl(top[i].userID);
+      const avatar = await loadImage(avatarURL);
+
+      const x = positions[i];
+
+      ctx.save();
 
       ctx.beginPath();
-      ctx.arc(x,170,70,0,Math.PI*2);
+      ctx.arc(x,180,70,0,Math.PI*2);
+      ctx.closePath();
       ctx.clip();
 
-      ctx.drawImage(avatars[i],x-70,100,140,140);
+      ctx.drawImage(avatar,x-70,110,140,140);
 
       ctx.restore();
 
       ctx.font="22px Arial";
       ctx.fillStyle="#00ffff";
+      ctx.textAlign="center";
 
-      ctx.fillText(`#${i+1}`,x-10,260);
+      ctx.fillText(`#${i+1}`,x,280);
 
       ctx.font="20px Arial";
       ctx.fillStyle="#ffffff";
 
-      ctx.fillText(top[i].name||"Unknown",x-90,290);
-
-      ctx.fillText(`${top[i].money}`,x-40,320);
+      ctx.fillText(top[i].name || "Unknown",x,310);
+      ctx.fillText(`${top[i].money || 0} $`,x,335);
 
     }
 
+    ctx.textAlign="left";
     ctx.font="20px Arial";
+    ctx.fillStyle="#ffffff";
 
-    let y=380;
+    let y = 400;
 
     for(let i=3;i<top.length;i++){
 
-      ctx.fillText(`${i+1}. ${top[i].name} — ${top[i].money}`,120,y);
+      ctx.fillText(
+        `${i+1}. ${top[i].name || "Unknown"} — ${top[i].money || 0} $`,
+        120,
+        y
+      );
 
-      y+=35;
+      y += 35;
     }
 
     const cache = path.join(__dirname,"cache");
