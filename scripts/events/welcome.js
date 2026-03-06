@@ -1,68 +1,70 @@
-const { getTime } = global.utils;
 const { createCanvas, loadImage, registerFont } = require("canvas");
 const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
-if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
+// encoded owner name
+const encodedOwner = "QWxpaHNhbiBTaG91cm92";
 
-// 🔹 Preload font once
+function decodeOwner() {
+  return Buffer.from(encodedOwner, "base64").toString("utf8");
+}
+
+// preload font
 (async () => {
   try {
-    const fontPath = path.join(__dirname, "cache", "tt-modernoir-trial.bold.ttf");
 
-    if (!fs.existsSync(fontPath)) {
-      console.log("⏬ Downloading welcome font...");
+    const fontPath = path.join(__dirname,"cache","font.ttf");
+
+    if(!fs.existsSync(fontPath)){
 
       const fontUrl =
-        "https://raw.githubusercontent.com/MR-ALIHSAN-SHOUROV-004/ALIHSAN-SHOUROV-BOT-STORAGE/main/fronts/tt-modernoir-trial.bold.ttf";
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf";
 
-      const { data } = await axios.get(fontUrl, {
-        responseType: "arraybuffer"
-      });
+      const {data} = await axios.get(fontUrl,{responseType:"arraybuffer"});
 
-      await fs.outputFile(fontPath, data);
-      console.log("✅ Font downloaded");
+      await fs.outputFile(fontPath,data);
     }
 
-    registerFont(fontPath, { family: "ModernoirBold" });
+    registerFont(fontPath,{family:"Poppins"});
 
-    console.log("✅ Font registered: ModernoirBold");
-
-  } catch (err) {
-    console.error("❌ Font preload error:", err);
+  } catch(e){
+    console.log("Font error",e);
   }
 })();
 
 module.exports = {
-  config: {
-    name: "welcome",
-    version: "4.2",
-    author: "Alihsan Shourov",
-    category: "events"
-  },
 
-  onStart: async ({ threadsData, message, event, api }) => {
+config:{
+name:"welcome",
+version:"8.0",
+author:"Alihsan Shourov",
+category:"events"
+},
 
-    try {
+onStart: async function({threadsData,event,api,usersData}){
 
-      const { threadID, logMessageType, logMessageData } = event;
+try{
 
-      const botID = api.getCurrentUserID();
-      const addedParticipants = logMessageData.addedParticipants || [];
+const {threadID,logMessageType,logMessageData}=event;
 
-      // 🔹 BOT ADDED MESSAGE
-      if (
-        logMessageType === "log:subscribe" &&
-        addedParticipants.some(p => p.userFbId === botID)
-      ) {
+const botID = api.getCurrentUserID();
 
-        const nickname = global.GoatBot?.config?.nickNameBot || "Bot";
-        await api.changeNickname(nickname, threadID, botID);
+const addedParticipants = logMessageData.addedParticipants || [];
 
-        const msg = `
+// BOT ADDED MESSAGE
+if (
+logMessageType === "log:subscribe" &&
+addedParticipants.some(p => p.userFbId === botID)
+){
+
+const nickname = global.GoatBot?.config?.nickNameBot || "Bot";
+
+await api.changeNickname(nickname,threadID,botID);
+
+const msg = `
 ━━━━━━━━━━━━━━━━━━━━━━
-☔  ${nickname} CONNECTED
+☔ ${nickname} CONNECTED
 ━━━━━━━━━━━━━━━━━━━━━━
 
 👑 BOT OWNER
@@ -74,189 +76,200 @@ module.exports = {
 📱 WHATSAPP
 ➤ wa.me/+8801709281334
 
-📡 TELEGRAM
-➤ t.me/
-
 ━━━━━━━━━━━━━━━━━━━━━━
 `;
 
-        const localImage = fs.createReadStream(
-          path.join(__dirname, "shourov", "shourov_c.gif")
-        );
+const onlineImage =
+await global.utils.getStreamFromURL(
+"https://files.catbox.moe/67v8il.gif"
+);
 
-        const onlineImage =
-          await global.utils.getStreamFromURL(
-            "https://files.catbox.moe/67v8il.gif"
-          );
+await api.sendMessage({
+body:msg,
+attachment:onlineImage
+},threadID);
 
-        const attachment =
-          localImage && Math.random() < 0.5
-            ? localImage
-            : onlineImage;
+return;
+}
 
-        await api.sendMessage(
-          {
-            body: msg,
-            attachment
-          },
-          threadID
-        );
+// NORMAL USER JOIN
+if(logMessageType!=="log:subscribe") return;
 
-        return;
-      }
+const threadData = await threadsData.get(threadID);
 
-      // 🔹 NORMAL USER ADDED
-      if (logMessageType !== "log:subscribe") return;
+const threadName = threadData.threadName || "Group";
 
-      const threadData = await threadsData.get(threadID);
-      const threadName = threadData.threadName || "Group Chat";
+const memberCount =
+(await api.getThreadInfo(threadID)).participantIDs.length;
 
-      const memberCount =
-        (await api.getThreadInfo(threadID)).participantIDs.length;
+const user = addedParticipants[0];
+const userName = user.fullName;
+const userID = user.userFbId;
 
-      const user = addedParticipants[0];
-      const userName = user.fullName;
-      const userID = user.userFbId;
+// avatars
+const avatarUrl = await usersData.getAvatarUrl(userID);
+const avatar = await loadImage(avatarUrl);
 
-      const avatarUrl =
-        `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+const adderID = event.author;
 
-      // 🎨 CANVAS
-      const canvas = createCanvas(1000, 500);
-      const ctx = canvas.getContext("2d");
+const adderInfo = await api.getUserInfo(adderID);
+const adderName = adderInfo[adderID]?.name || "Unknown";
 
-      // gradient background
-      const grad = ctx.createLinearGradient(0, 0, 1000, 500);
+const adderAvatarUrl = await usersData.getAvatarUrl(adderID);
+const adderAvatar = await loadImage(adderAvatarUrl);
 
-      grad.addColorStop(0, "#141E30");
-      grad.addColorStop(0.5, "#243B55");
-      grad.addColorStop(1, "#0F2027");
+// canvas
+const width = 1000;
+const height = 550;
 
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 1000, 500);
+const canvas = createCanvas(width,height);
+const ctx = canvas.getContext("2d");
 
-      // glow circles
-      ctx.beginPath();
-      ctx.arc(200, 120, 80, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,255,255,0.2)";
-      ctx.fill();
+// gradient background
+const grad = ctx.createLinearGradient(0,0,width,height);
 
-      ctx.beginPath();
-      ctx.arc(800, 400, 120, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,0,255,0.2)";
-      ctx.fill();
+grad.addColorStop(0,"#0f2027");
+grad.addColorStop(0.5,"#203a43");
+grad.addColorStop(1,"#2c5364");
 
-      // member avatar
-      const avatarResponse = await axios.get(
-        avatarUrl,
-        { responseType: "arraybuffer" }
-      );
+ctx.fillStyle = grad;
+ctx.fillRect(0,0,width,height);
 
-      const avatar = await loadImage(avatarResponse.data);
+// particle stars
+for(let i=0;i<70;i++){
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(500, 170, 90, 0, Math.PI * 2);
-      ctx.clip();
+const x = Math.random()*width;
+const y = Math.random()*height;
+const r = Math.random()*2;
 
-      ctx.drawImage(avatar, 410, 80, 180, 180);
+ctx.beginPath();
+ctx.arc(x,y,r,0,Math.PI*2);
+ctx.fillStyle="rgba(255,255,255,0.4)";
+ctx.fill();
 
-      ctx.restore();
+}
 
-      // avatar border
-      ctx.beginPath();
-      ctx.arc(500, 170, 95, 0, Math.PI * 2);
-      ctx.strokeStyle = "#00ffff";
-      ctx.lineWidth = 6;
-      ctx.stroke();
+// pulse animation
+const pulse = Math.sin(Date.now()/200)*8;
 
-      // added by
-      const adderID = event.author;
+// main avatar
+ctx.save();
+ctx.beginPath();
+ctx.arc(500,180,90,0,Math.PI*2);
+ctx.clip();
 
-      const adderInfo = await api.getUserInfo(adderID);
+ctx.drawImage(avatar,410,90,180,180);
 
-      const adderUser =
-        adderInfo[adderID]?.name || "Unknown";
+ctx.restore();
 
-      const adderAvatar = await loadImage(
-        `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`
-      );
+// neon pulse borders
+ctx.shadowColor="#ff0000";
+ctx.shadowBlur=40;
 
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(160, 360, 60, 0, Math.PI * 2);
-      ctx.clip();
+ctx.beginPath();
+ctx.arc(500,180,100+pulse,0,Math.PI*2);
+ctx.strokeStyle="#ff0000";
+ctx.lineWidth=5;
+ctx.stroke();
 
-      ctx.drawImage(adderAvatar, 100, 300, 120, 120);
+ctx.shadowColor="#00ffff";
+ctx.shadowBlur=40;
 
-      ctx.restore();
+ctx.beginPath();
+ctx.arc(500,180,95+pulse,0,Math.PI*2);
+ctx.strokeStyle="#00ffff";
+ctx.lineWidth=6;
+ctx.stroke();
 
-      ctx.beginPath();
-      ctx.arc(160, 360, 65, 0, Math.PI * 2);
-      ctx.strokeStyle = "#ff00ff";
-      ctx.lineWidth = 4;
-      ctx.stroke();
+ctx.shadowBlur=0;
 
-      // text
-      ctx.textAlign = "center";
+// adder avatar bottom
+ctx.save();
+ctx.beginPath();
+ctx.arc(500,420,60,0,Math.PI*2);
+ctx.clip();
 
-      ctx.font = "bold 55px ModernoirBold";
-      ctx.fillStyle = "#ffffff";
-      ctx.fillText("WELCOME", 500, 330);
+ctx.drawImage(adderAvatar,440,360,120,120);
 
-      ctx.font = "bold 35px ModernoirBold";
-      ctx.fillStyle = "#00ffcc";
-      ctx.fillText(userName, 500, 380);
+ctx.restore();
 
-      ctx.font = "bold 25px ModernoirBold";
-      ctx.fillStyle = "#ffea00";
-      ctx.fillText("Added by " + adderUser, 500, 430);
+ctx.beginPath();
+ctx.arc(500,420,65,0,Math.PI*2);
+ctx.strokeStyle="#00ffff";
+ctx.lineWidth=4;
+ctx.stroke();
 
-      // save image
-      const imgPath =
-        path.join(__dirname, "cache", `welcome_${userID}.png`);
+// glowing title
+ctx.textAlign="center";
 
-      await fs.ensureDir(path.dirname(imgPath));
+ctx.shadowColor="#00ffff";
+ctx.shadowBlur=30;
 
-      fs.writeFileSync(
-        imgPath,
-        canvas.toBuffer("image/png")
-      );
+ctx.font="bold 65px Poppins";
+ctx.fillStyle="#ffffff";
+ctx.fillText("WELCOME",500,340);
 
-      // welcome body
-      const body = `
+ctx.shadowBlur=0;
+
+// user name
+ctx.font="bold 35px Poppins";
+ctx.fillStyle="#00ffcc";
+ctx.fillText(userName,500,390);
+
+// added by
+ctx.font="bold 25px Poppins";
+ctx.fillStyle="#ffd700";
+ctx.fillText("Added by "+adderName,500,460);
+
+// scrolling owner
+const owner = decodeOwner();
+
+ctx.font="bold 22px Poppins";
+ctx.fillStyle="#ffffff";
+
+const offset = (Date.now()/10)%width;
+
+ctx.fillText(owner,width-offset,530);
+
+// save image
+const imgPath = path.join(__dirname,"cache",`welcome_${userID}.png`);
+
+await fs.ensureDir(path.dirname(imgPath));
+
+fs.writeFileSync(imgPath,canvas.toBuffer("image/png"));
+
+// body
+const body = `
 ╔══════ ✦ WELCOME ✦ ══════╗
 
-💐 𝐀𝐬𝐬𝐚𝐥𝐚𝐦𝐮 𝐀𝐥𝐚𝐢𝐤𝐮𝐦 💐
+🌸 Assalamu Alaikum 🌸
 
-✨ 𝗡𝗘𝗪 𝗠𝗘𝗠𝗕𝗘𝗥 ✨
+✨ NEW MEMBER
 ➤ ${userName}
 
 🎉 Welcome to
 ➤ ${threadName}
 
-👥 You are the
-➤ ${memberCount}th member of this group
-
-━━━━━━━━━━━━━━━━━━
-
-🤖 BOT OWNER
-𝐀𝐋𝐈𝐇𝐒𝐀𝐍 𝐒𝐇𝐎𝐔𝐑𝐎𝐕
+👥 Member
+➤ ${memberCount}
 
 ━━━━━━━━━━━━━━━━━━
 `;
 
-      await api.sendMessage(
-        {
-          body,
-          attachment: fs.createReadStream(imgPath)
-        },
-        threadID,
-        () => fs.unlinkSync(imgPath)
-      );
+await api.sendMessage({
+body,
+attachment:fs.createReadStream(imgPath)
+},
+threadID,
+()=>fs.unlinkSync(imgPath)
+);
 
-    } catch (err) {
-      console.error("❌ Welcome event error:", err);
-    }
-  }
+}catch(err){
+
+console.log("Welcome error",err);
+
+}
+
+}
+
 };
