@@ -10,15 +10,25 @@ if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
 (async () => {
   try {
     const fontPath = path.join(__dirname, "cache", "tt-modernoir-trial.bold.ttf");
+
     if (!fs.existsSync(fontPath)) {
       console.log("⏬ Downloading welcome font...");
-      const fontUrl = "https://github.com/MR-ALIHSAN SHOUROV-004/ALIHSAN SHOUROV-BOT-STORAGE/raw/main/fronts/tt-modernoir-trial.bold.ttf";
-      const { data } = await axios.get(fontUrl, { responseType: "arraybuffer" });
+
+      const fontUrl =
+        "https://raw.githubusercontent.com/MR-ALIHSAN-SHOUROV-004/ALIHSAN-SHOUROV-BOT-STORAGE/main/fronts/tt-modernoir-trial.bold.ttf";
+
+      const { data } = await axios.get(fontUrl, {
+        responseType: "arraybuffer"
+      });
+
       await fs.outputFile(fontPath, data);
       console.log("✅ Font downloaded");
     }
+
     registerFont(fontPath, { family: "ModernoirBold" });
+
     console.log("✅ Font registered: ModernoirBold");
+
   } catch (err) {
     console.error("❌ Font preload error:", err);
   }
@@ -27,159 +37,221 @@ if (!global.temp.welcomeEvent) global.temp.welcomeEvent = {};
 module.exports = {
   config: {
     name: "welcome",
-    version: "4.1",
+    version: "4.2",
     author: "Alihsan Shourov",
     category: "events"
   },
 
-  onStart: async ({ threadsData, message, event, api, getLang }) => {
+  onStart: async ({ threadsData, message, event, api }) => {
+
     try {
+
       const { threadID, logMessageType, logMessageData } = event;
 
       const botID = api.getCurrentUserID();
       const addedParticipants = logMessageData.addedParticipants || [];
 
+      // 🔹 BOT ADDED MESSAGE
       if (
-  logMessageType === "log:subscribe" &&
-  addedParticipants.some(p => p.userFbId === botID)
-) {
-  const nickname = global.GoatBot?.config?.nickNameBot || "Bot";
-  await api.changeNickname(nickname, threadID, botID);
+        logMessageType === "log:subscribe" &&
+        addedParticipants.some(p => p.userFbId === botID)
+      ) {
 
-  const msg = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-${nickname}☔︎ 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗗 𝗦𝗨𝗖𝗖𝗘𝗦𝗦𝗙𝗨𝗟𝗟
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-𝗕𝗢𝗧 𝗔𝗗𝗠𝗜𝗡: 𝐀𝐥𝐈𝐇𝐒𝐀𝐍 𝐒𝐇𝐎𝐔𝐑𝐎𝐕
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-𝗙𝗔𝗖𝗘𝗕𝗢𝗢𝗞: https://www.facebook.com/shourov.sm24
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-𝗪𝗛𝗔𝗧𝗦𝗔𝗣𝗣: wa.me/+8801709281334
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-𝗧𝗘𝗟𝗘𝗚𝗥𝗔𝗠: t.me/
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-        `;
+        const nickname = global.GoatBot?.config?.nickNameBot || "Bot";
+        await api.changeNickname(nickname, threadID, botID);
 
-  const localImage = fs.createReadStream(
-    path.join(__dirname, "shourov", "shourov_c.gif")
-  );
+        const msg = `
+━━━━━━━━━━━━━━━━━━━━━━
+☔  ${nickname} CONNECTED
+━━━━━━━━━━━━━━━━━━━━━━
 
-  const onlineImage = await global.utils.getStreamFromURL(
-    "https://files.catbox.moe/67v8il.gif"
-  );
+👑 BOT OWNER
+➤ 𝐀𝐋𝐈𝐇𝐒𝐀𝐍 𝐒𝐇𝐎𝐔𝐑𝐎𝐕
 
-  const attachment =
-  localImage && Math.random() < 0.5
-    ? localImage
-    : onlineImage;
+🌐 FACEBOOK
+➤ facebook.com/shourov.sm24
 
-  await api.sendMessage(
-    {
-      body: msg,
-      attachment: attachment
-    },
-    threadID
-  );
+📱 WHATSAPP
+➤ wa.me/+8801709281334
 
-  return;
-}
+📡 TELEGRAM
+➤ t.me/
 
-      // 🔹 Case 2: Normal user added (welcome canvas)
+━━━━━━━━━━━━━━━━━━━━━━
+`;
+
+        const localImage = fs.createReadStream(
+          path.join(__dirname, "shourov", "shourov_c.gif")
+        );
+
+        const onlineImage =
+          await global.utils.getStreamFromURL(
+            "https://files.catbox.moe/67v8il.gif"
+          );
+
+        const attachment =
+          localImage && Math.random() < 0.5
+            ? localImage
+            : onlineImage;
+
+        await api.sendMessage(
+          {
+            body: msg,
+            attachment
+          },
+          threadID
+        );
+
+        return;
+      }
+
+      // 🔹 NORMAL USER ADDED
       if (logMessageType !== "log:subscribe") return;
 
       const threadData = await threadsData.get(threadID);
       const threadName = threadData.threadName || "Group Chat";
-      const memberCount = (await api.getThreadInfo(threadID)).participantIDs.length;
+
+      const memberCount =
+        (await api.getThreadInfo(threadID)).participantIDs.length;
 
       const user = addedParticipants[0];
       const userName = user.fullName;
       const userID = user.userFbId;
 
-      // Avatar URL
-      const avatarUrl = `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
+      const avatarUrl =
+        `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
 
-      // Random backgrounds
-      const backgrounds = [
-        "https://files.catbox.moe/bv0eep.gif"
-      ];
-      const randomBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
-
-      // Canvas
+      // 🎨 CANVAS
       const canvas = createCanvas(1000, 500);
       const ctx = canvas.getContext("2d");
 
-      // Background
-      const bg = await loadImage((await axios.get(randomBg, { responseType: "arraybuffer" })).data);
-      ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+      // gradient background
+      const grad = ctx.createLinearGradient(0, 0, 1000, 500);
 
-      // Avatar circle
-      let avatar;
-      try {
-        const response = await axios.get(avatarUrl, { responseType: "arraybuffer" });
-        avatar = await loadImage(response.data);
-      } catch {
-        avatar = await loadImage("https://i.ibb.co/2kR9xgQ/default-avatar.png");
-      }
+      grad.addColorStop(0, "#141E30");
+      grad.addColorStop(0.5, "#243B55");
+      grad.addColorStop(1, "#0F2027");
 
-      const avatarSize = 200;
-      const avatarX = canvas.width / 2 - avatarSize / 2;
-      const avatarY = 40;
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1000, 500);
+
+      // glow circles
+      ctx.beginPath();
+      ctx.arc(200, 120, 80, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,255,255,0.2)";
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(800, 400, 120, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,0,255,0.2)";
+      ctx.fill();
+
+      // member avatar
+      const avatarResponse = await axios.get(
+        avatarUrl,
+        { responseType: "arraybuffer" }
+      );
+
+      const avatar = await loadImage(avatarResponse.data);
 
       ctx.save();
       ctx.beginPath();
-      ctx.arc(canvas.width / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2, true);
-      ctx.closePath();
+      ctx.arc(500, 170, 90, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(avatar, avatarX, avatarY, avatarSize, avatarSize);
+
+      ctx.drawImage(avatar, 410, 80, 180, 180);
+
       ctx.restore();
 
-      // Text
+      // avatar border
+      ctx.beginPath();
+      ctx.arc(500, 170, 95, 0, Math.PI * 2);
+      ctx.strokeStyle = "#00ffff";
+      ctx.lineWidth = 6;
+      ctx.stroke();
+
+      // added by
+      const adderID = event.author;
+
+      const adderInfo = await api.getUserInfo(adderID);
+
+      const adderUser =
+        adderInfo[adderID]?.name || "Unknown";
+
+      const adderAvatar = await loadImage(
+        `https://graph.facebook.com/${userID}/picture?height=720&width=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`
+      );
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(160, 360, 60, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.drawImage(adderAvatar, 100, 300, 120, 120);
+
+      ctx.restore();
+
+      ctx.beginPath();
+      ctx.arc(160, 360, 65, 0, Math.PI * 2);
+      ctx.strokeStyle = "#ff00ff";
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // text
       ctx.textAlign = "center";
-      ctx.shadowColor = "rgba(0,0,0,0.6)";
-      ctx.shadowBlur = 6;
 
       ctx.font = "bold 55px ModernoirBold";
       ctx.fillStyle = "#ffffff";
-      ctx.fillText(userName, canvas.width / 2, 310);
+      ctx.fillText("WELCOME", 500, 330);
 
       ctx.font = "bold 35px ModernoirBold";
-      ctx.fillStyle = "#ffea00";
-      ctx.fillText(threadName.toUpperCase(), canvas.width / 2, 370);
-
-      ctx.font = "bold 30px ModernoirBold";
       ctx.fillStyle = "#00ffcc";
-      ctx.fillText(`You're the ${memberCount}th member on this group`, canvas.width / 2, 420);
+      ctx.fillText(userName, 500, 380);
 
-      // Save image
-      const imgPath = path.join(__dirname, "cache", `welcome_${userID}.png`);
+      ctx.font = "bold 25px ModernoirBold";
+      ctx.fillStyle = "#ffea00";
+      ctx.fillText("Added by " + adderUser, 500, 430);
+
+      // save image
+      const imgPath =
+        path.join(__dirname, "cache", `welcome_${userID}.png`);
+
       await fs.ensureDir(path.dirname(imgPath));
-      const out = fs.createWriteStream(imgPath);
-      const stream = canvas.createPNGStream();
-      stream.pipe(out);
-      await new Promise(resolve => out.on("finish", resolve));
 
-      // Send welcome
-      message.send(
+      fs.writeFileSync(
+        imgPath,
+        canvas.toBuffer("image/png")
+      );
+
+      // welcome body
+      const body = `
+╔══════ ✦ WELCOME ✦ ══════╗
+
+💐 𝐀𝐬𝐬𝐚𝐥𝐚𝐦𝐮 𝐀𝐥𝐚𝐢𝐤𝐮𝐦 💐
+
+✨ 𝗡𝗘𝗪 𝗠𝗘𝗠𝗕𝗘𝗥 ✨
+➤ ${userName}
+
+🎉 Welcome to
+➤ ${threadName}
+
+👥 You are the
+➤ ${memberCount}th member of this group
+
+━━━━━━━━━━━━━━━━━━
+
+🤖 BOT OWNER
+𝐀𝐋𝐈𝐇𝐒𝐀𝐍 𝐒𝐇𝐎𝐔𝐑𝐎𝐕
+
+━━━━━━━━━━━━━━━━━━
+`;
+
+      await api.sendMessage(
         {
-          body: `‎‎╔════•|      ✿      |•════╗
- 💐আ্ঁস্ঁসা্ঁলা্ঁমু্ঁ💚আ্ঁলা্ঁই্ঁকু্ঁম্ঁ💐
-╚════•|      ✿      |•════╝
-
-    ✨🆆🅴🅻🅻 🅲🅾🅼🅴✨
-
-                 ❥𝐍𝐄𝐖~
-
-        ~🇲‌🇪‌🇲‌🇧‌🇪‌🇷‌~ ${userName}, ༄✺আ্ঁপ্ঁনা্ঁকে্ঁ আ্ঁমা্ঁদে্ঁর্ঁ✺࿐ ${threadName}🥰🖤🌸—এ্ঁর্ঁ প্ঁক্ষ্ঁ🍀থে্ঁকে্ঁ🍀—🌸🥀
-
-         🥀_ভা্ঁলো্ঁবা্ঁসা্ঁ_অ্ঁভি্ঁরা্ঁম্ঁ_🥀\༄✺আঁপঁনিঁ এঁইঁ গ্রুঁপেঁর  ${memberCount} নঁং মে্ঁম্বা্ঁরঁ ࿐╔╦══•    •✠•❀•✠ •   •══╦╗
-        ♥  𝐁𝐎𝐓'𝐬 𝐎𝐖𝐍𝐄𝐑♥
-
-                           ☟                     
-
-      ♥𝐀𝐥𝐈𝐇𝐒𝐀𝐍 𝐒𝐇𝐎𝐔𝐑𝐎𝐕(✷‿✷)♥
-    ╚╩══•"`,
+          body,
           attachment: fs.createReadStream(imgPath)
         },
+        threadID,
         () => fs.unlinkSync(imgPath)
       );
 
