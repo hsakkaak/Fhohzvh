@@ -1,19 +1,18 @@
 const { createCanvas, loadImage } = require("canvas");
 const GIFEncoder = require("gifencoder");
-const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
+const axios = require("axios");
 
 module.exports = {
-
 config:{
 name:"welcome",
-version:"10.0",
+version:"12.0",
 author:"Alihsan Shourov",
 category:"events"
 },
 
-onStart: async function({threadsData,event,api,usersData}){
+onStart: async function({event,api,usersData,threadsData}){
 
 try{
 
@@ -29,16 +28,16 @@ logMessageType==="log:subscribe" &&
 addedParticipants.some(p=>p.userFbId===botID)
 ){
 
-const ownerID = "100081816009903"; // owner uid
+const ownerID = "100081816009903";
 
 const ownerInfo = await api.getUserInfo(ownerID);
 
 const ownerName = ownerInfo[ownerID].name;
 
-const ownerAvatar =
-`https://graph.facebook.com/${ownerID}/picture?height=720&width=720`;
-
-const ownerImage = await axios.get(ownerAvatar,{responseType:"stream"});
+const ownerAvatar = await axios.get(
+`https://graph.facebook.com/${ownerID}/picture?height=720&width=720`,
+{responseType:"stream"}
+);
 
 const msg = `
 ━━━━━━━━━━━━━━━━━━
@@ -58,10 +57,8 @@ wa.me/+8801709281334
 `;
 
 await api.sendMessage({
-
 body:msg,
-attachment:ownerImage.data
-
+attachment:ownerAvatar.data
 },threadID);
 
 return;
@@ -103,17 +100,19 @@ encoder.createReadStream().pipe(fs.createWriteStream(filePath));
 
 encoder.start();
 encoder.setRepeat(0);
-encoder.setDelay(80);
+encoder.setDelay(90);
 encoder.setQuality(10);
 
 const canvas = createCanvas(width,height);
 const ctx = canvas.getContext("2d");
 
-for(let frame=0;frame<30;frame++){
+for(let frame=0; frame<40; frame++){
 
-// animated background
+// moving gradient background
+const shift = frame*20;
+
 const grad = ctx.createLinearGradient(
-Math.sin(frame*0.2)*200,
+0+shift,
 0,
 width,
 height
@@ -126,7 +125,7 @@ ctx.fillStyle = grad;
 ctx.fillRect(0,0,width,height);
 
 // stars
-for(let i=0;i<40;i++){
+for(let i=0;i<50;i++){
 
 ctx.beginPath();
 
@@ -138,68 +137,68 @@ Math.random()*height,
 Math.PI*2
 );
 
-ctx.fillStyle="rgba(255,255,255,0.4)";
+ctx.fillStyle="rgba(255,255,255,0.5)";
 ctx.fill();
 
 }
 
 // pulse border
-const pulse = 80 + Math.sin(frame*0.4)*6;
+const pulse = 75 + Math.sin(frame*0.3)*12;
 
-// adder avatar (left)
+// LEFT avatar (adder)
 ctx.save();
 ctx.beginPath();
-ctx.arc(300,120,70,0,Math.PI*2);
+ctx.arc(250,100,70,0,Math.PI*2);
 ctx.clip();
-ctx.drawImage(adderAvatar,230,50,140,140);
+ctx.drawImage(adderAvatar,180,30,140,140);
 ctx.restore();
 
 ctx.beginPath();
-ctx.arc(300,120,pulse,0,Math.PI*2);
+ctx.arc(250,100,pulse,0,Math.PI*2);
 ctx.strokeStyle="#ff0000";
-ctx.lineWidth=5;
+ctx.lineWidth=6;
 ctx.stroke();
 
-// member avatar (right)
+// RIGHT avatar (new member)
 ctx.save();
 ctx.beginPath();
-ctx.arc(600,120,70,0,Math.PI*2);
+ctx.arc(650,100,70,0,Math.PI*2);
 ctx.clip();
-ctx.drawImage(avatar,530,50,140,140);
+ctx.drawImage(avatar,580,30,140,140);
 ctx.restore();
 
 ctx.beginPath();
-ctx.arc(600,120,pulse,0,Math.PI*2);
+ctx.arc(650,100,pulse,0,Math.PI*2);
 ctx.strokeStyle="#00ffff";
-ctx.lineWidth=5;
+ctx.lineWidth=6;
 ctx.stroke();
 
-// arrow
-ctx.font="bold 60px Arial";
+// arrow middle
+ctx.font="bold 70px Arial";
 ctx.fillStyle="#ffffff";
 ctx.textAlign="center";
-ctx.fillText("➜",450,140);
+ctx.fillText("➜",450,115);
 
 // welcome text
-ctx.font="bold 50px Arial";
-ctx.fillText("WELCOME",450,250);
+ctx.font="bold 55px Arial";
+ctx.fillText("WELCOME",450,230);
 
-// sliding name
-const move = Math.sin(frame*0.3)*40;
+// sliding username
+const slide = Math.sin(frame*0.25)*70;
 
-ctx.font="bold 32px Arial";
+ctx.font="bold 34px Arial";
 ctx.fillStyle="#00ffff";
-ctx.fillText(userName,450+move,300);
+ctx.fillText(userName,450+slide,280);
 
-// added by
-ctx.font="bold 22px Arial";
+// added by text
+ctx.font="bold 24px Arial";
 ctx.fillStyle="#ffd700";
-ctx.fillText("Added by "+adderName,450,340);
+ctx.fillText("Added by "+adderName,450,320);
 
-// owner
+// owner text
 ctx.font="20px Arial";
 ctx.fillStyle="#ffffff";
-ctx.fillText("Owner: Alihsan Shourov",450,400);
+ctx.fillText("Owner: Alihsan Shourov",450,380);
 
 encoder.addFrame(ctx);
 
