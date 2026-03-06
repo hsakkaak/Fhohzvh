@@ -1,101 +1,127 @@
+const { createCanvas, loadImage } = require("canvas");
+const fs = require("fs-extra");
+const path = require("path");
+
 const deltaNext = global.GoatBot.configCommands.envCommands.rank.deltaNext;
 const expToLevel = exp => Math.floor((1 + Math.sqrt(1 + 8 * exp / deltaNext)) / 2);
-const { drive } = global.utils;
 
 module.exports = {
-	config: {
-		name: "rankup",
-		version: "1.4",
-		author: "NTKhang",
-		countDown: 5,
-		role: 0,
-		description: {
-			vi: "Bật/tắt thông báo level up",
-			en: "Turn on/off level up notification"
-		},
-		category: "rank",
-		guide: {
-			en: "{pn} [on | off]"
-		},
-		envConfig: {
-			deltaNext: 5
-		}
-	},
+config:{
+name:"rankup",
+version:"2.1",
+author:"Alihsan Shourov",
+role:0,
+category:"rank",
+guide:{
+en:"{pn} on / off"
+}
+},
 
-	langs: {
-		vi: {
-			syntaxError: "Sai cú pháp, chỉ có thể dùng {pn} on hoặc {pn} off",
-			turnedOn: "Đã bật thông báo level up",
-			turnedOff: "Đã tắt thông báo level up",
-			notiMessage: "🎉🎉 chúc mừng bạn đạt level %1"
-		},
-		en: {
-			syntaxError: "Syntax error, only use {pn} on or {pn} off",
-			turnedOn: "Turned on level up notification",
-			turnedOff: "Turned off level up notification",
-			notiMessage: "🎉🎉 Congratulations on reaching level %1"
-		}
-	},
+// ON OFF COMMAND
+onStart: async function ({ message, event, threadsData, args }) {
 
-	onStart: async function ({ message, event, threadsData, args, getLang }) {
-		if (!["on", "off"].includes(args[0]))
-			return message.reply(getLang("syntaxError"));
-		await threadsData.set(event.threadID, args[0] == "on", "settings.sendRankupMessage");
-		return message.reply(args[0] == "on" ? getLang("turnedOn") : getLang("turnedOff"));
-	},
+if(!["on","off"].includes(args[0]))
+return message.reply("Use: rankup on / rankup off");
 
-	onChat: async function ({ threadsData, usersData, event, message, getLang }) {
-		const threadData = await threadsData.get(event.threadID);
-		const sendRankupMessage = threadData.settings.sendRankupMessage;
-		if (!sendRankupMessage)
-			return;
-		const { exp } = await usersData.get(event.senderID);
-		const currentLevel = expToLevel(exp);
-		if (currentLevel > expToLevel(exp - 1)) {
-			let customMessage = await threadsData.get(event.threadID, "data.rankup.message");
-			let isTag = false;
-			let userData;
-			const formMessage = {};
+await threadsData.set(
+event.threadID,
+args[0] === "on",
+"settings.sendRankupMessage"
+);
 
-			if (customMessage) {
-				userData = await usersData.get(event.senderID);
-				customMessage = customMessage
-					// .replace(/{userName}/g, userData.name)
-					.replace(/{oldRank}/g, currentLevel - 1)
-					.replace(/{currentRank}/g, currentLevel);
-				if (customMessage.includes("{userNameTag}")) {
-					isTag = true;
-					customMessage = customMessage.replace(/{userNameTag}/g, `@${userData.name}`);
-				}
-				else {
-					customMessage = customMessage.replace(/{userName}/g, userData.name);
-				}
+return message.reply(
+args[0] === "on"
+? "✅ Level up banner ON"
+: "❌ Level up banner OFF"
+);
 
-				formMessage.body = customMessage;
-			}
-			else {
-				formMessage.body = getLang("notiMessage", currentLevel);
-			}
+},
 
-			if (threadData.data.rankup?.attachments?.length > 0) {
-				const files = threadData.data.rankup.attachments;
-				const attachments = files.reduce((acc, file) => {
-					acc.push(drive.getFile(file, "stream"));
-					return acc;
-				}, []);
-				formMessage.attachment = (await Promise.allSettled(attachments))
-					.filter(({ status }) => status == "fulfilled")
-					.map(({ value }) => value);
-			}
+// LEVEL UP DETECT
+onChat: async function({event, message, usersData, threadsData}){
 
-			if (isTag) {
-				formMessage.mentions = [{
-					tag: `@${userData.name}`,
-					id: event.senderID
-				}];
-			}
+let threadData = await threadsData.get(event.threadID);
 
-			message.reply(formMessage);
-		}
-	}
+// default ON
+if(threadData.settings?.sendRankupMessage === undefined){
+await threadsData.set(event.threadID,true,"settings.sendRankupMessage");
+threadData.settings.sendRankupMessage = true;
+}
+
+if(!threadData.settings.sendRankupMessage) return;
+
+const user = await usersData.get(event.senderID);
+
+const currentLevel = expToLevel(user.exp);
+
+if(currentLevel > expToLevel(user.exp-1)){
+
+const name = user.name || "User";
+
+const avatarURL = await usersData.getAvatarUrl(event.senderID);
+
+const canvas = createCanvas(600,200);
+const ctx = canvas.getContext("2d");
+
+// gradient background
+const grad = ctx.createLinearGradient(0,0,600,200);
+grad.addColorStop(0,"#1e3c72");
+grad.addColorStop(1,"#2a5298");
+
+ctx.fillStyle = grad;
+ctx.fillRect(0,0,600,200);
+
+// avatar
+const avatar = await loadImage(avatarURL);
+
+ctx.save();
+ctx.beginPath();
+ctx.arc(100,100,60,0,Math.PI*2);
+ctx.clip();
+ctx.drawImage(avatar,40,40,120,120);
+ctx.restore();
+
+// glow border
+ctx.beginPath();
+ctx.arc(100,100,65,0,Math.PI*2);
+ctx.strokeStyle="#00ffff";
+ctx.lineWidth=5;
+ctx.stroke();
+
+// text
+ctx.font="bold 32px Arial";
+ctx.fillStyle="#ffffff";
+
+ctx.fillText("LEVEL UP!",200,80);
+
+ctx.font="bold 26px Arial";
+ctx.fillText(name,200,120);
+
+ctx.font="22px Arial";
+ctx.fillText("Level "+currentLevel,200,160);
+
+// save banner
+const cache = path.join(__dirname,"cache");
+
+if(!fs.existsSync(cache))
+fs.mkdirSync(cache,{recursive:true});
+
+const bannerPath = path.join(cache,`rank_${Date.now()}.png`);
+
+fs.writeFileSync(bannerPath,canvas.toBuffer());
+
+return message.reply({
+
+body:`🎉 ${name} reached level ${currentLevel}!`,
+
+attachment:[
+fs.createReadStream(bannerPath),
+await global.utils.getStreamFromURL("https://files.catbox.moe/lxzpta.gif")
+]
+
+},()=>fs.unlinkSync(bannerPath));
+
+}
+
+}
 };
