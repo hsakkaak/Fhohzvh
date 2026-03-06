@@ -31,6 +31,7 @@
     "fs-extra": "^11.3.4",
     "googlethis": "^1.8.0",
     "gradient-string": "^2.0.2",
+    "gifencoder": " ^2.0.1",
     "graphql-query-to-json": "^2.0.6",
     "https": "^1.0.0",
     "imgur-link": "^1.0.5",
