@@ -1,86 +1,58 @@
 const fs = require("fs-extra");
 const path = require("path");
-const GIFEncoder = require("gifencoder");
 const { createCanvas, loadImage } = require("canvas");
 
 module.exports = {
-  config:{
-    name:"top",
-    version:"6.0",
-    author:"Shourov",
-    role:0,
-    category:"economy"
+  config: {
+    name: "top",
+    version: "7.0",
+    author: "Shourov Fix",
+    role: 0,
+    category: "economy"
   },
 
-  onStart: async function({message, usersData}){
+  onStart: async function ({ message, usersData }) {
 
-    const users = await usersData.getAll();
+    try {
 
-    users.sort((a,b)=>(b.money||0)-(a.money||0));
+      const allUsers = await usersData.getAll();
 
-    const top = users.slice(0,10);
+      if (!allUsers || allUsers.length === 0)
+        return message.reply("❌ No user data found.");
 
-    const width = 900;
-    const height = 700;
+      allUsers.sort((a,b)=>(b.money||0)-(a.money||0));
 
-    const encoder = new GIFEncoder(width,height);
+      const top = allUsers.slice(0,15);
 
-    const cache = path.join(__dirname,"cache");
+      const width = 900;
+      const height = 850;
 
-    if(!fs.existsSync(cache))
-      fs.mkdirSync(cache,{recursive:true});
+      const canvas = createCanvas(width,height);
+      const ctx = canvas.getContext("2d");
 
-    const filePath = path.join(cache,`top_${Date.now()}.gif`);
-
-    encoder.createReadStream().pipe(fs.createWriteStream(filePath));
-
-    encoder.start();
-    encoder.setRepeat(0);
-    encoder.setDelay(120);
-    encoder.setQuality(10);
-
-    const canvas = createCanvas(width,height);
-    const ctx = canvas.getContext("2d");
-
-    const avatars = [];
-
-    for(let i=0;i<3;i++){
-      avatars.push(await loadImage(await usersData.getAvatarUrl(top[i].userID)));
-    }
-
-    for(let frame=0; frame<15; frame++){
-
-      // animated gradient background
-      const grad = ctx.createLinearGradient(0,0,900,700);
-
-      grad.addColorStop(0,"#0f2027");
-      grad.addColorStop(0.5,"#203a43");
-      grad.addColorStop(1,"#2c5364");
+      // gradient background
+      const grad = ctx.createLinearGradient(0,0,width,height);
+      grad.addColorStop(0,"#1e3c72");
+      grad.addColorStop(1,"#2a5298");
 
       ctx.fillStyle = grad;
       ctx.fillRect(0,0,width,height);
 
-      const move = Math.sin(frame*0.3)*10;
-
-      ctx.font="bold 42px Arial";
-      ctx.fillStyle="#ffffff";
+      ctx.font="bold 40px Arial";
+      ctx.fillStyle="#fff";
       ctx.textAlign="center";
-
-      ctx.fillText("TOP RICHEST USERS",width/2 + move,70);
+      ctx.fillText("TOP RICHEST USERS",width/2,70);
 
       const pos=[200,450,700];
 
       for(let i=0;i<3;i++){
 
+        if(!top[i]) continue;
+
+        const avatarURL = await usersData.getAvatarUrl(top[i].userID);
+        const avatar = await loadImage(avatarURL);
+
         const x = pos[i];
-
-        const pulse = 80 + Math.sin(frame*0.4)*6;
-
-        ctx.beginPath();
-        ctx.arc(x,200,pulse,0,Math.PI*2);
-        ctx.strokeStyle="#00ffff";
-        ctx.lineWidth=6;
-        ctx.stroke();
 
         ctx.save();
 
@@ -88,30 +60,31 @@ module.exports = {
         ctx.arc(x,200,70,0,Math.PI*2);
         ctx.clip();
 
-        ctx.drawImage(avatars[i],x-70,130,140,140);
+        ctx.drawImage(avatar,x-70,130,140,140);
 
         ctx.restore();
 
-        ctx.font="22px Arial";
-        ctx.fillStyle="#00e5ff";
+        ctx.beginPath();
+        ctx.arc(x,200,75,0,Math.PI*2);
+        ctx.strokeStyle="#00ffff";
+        ctx.lineWidth=6;
+        ctx.stroke();
 
-        ctx.fillText(`#${i+1}`,x,310);
-
+        ctx.fillStyle="#fff";
         ctx.font="20px Arial";
-        ctx.fillStyle="#ffffff";
 
-        ctx.fillText(top[i].name || "Unknown",x,340);
-        ctx.fillText(`${top[i].money || 0} $`,x,365);
+        ctx.fillText(`#${i+1}`,x,300);
+        ctx.fillText(top[i].name || "Unknown",x,330);
+        ctx.fillText(`${top[i].money || 0} $`,x,355);
       }
 
       ctx.textAlign="left";
+      ctx.font="22px Arial";
+      ctx.fillStyle="#fff";
 
       let y=420;
 
       for(let i=3;i<top.length;i++){
-
-        ctx.font="22px Arial";
-        ctx.fillStyle="#ffffff";
 
         ctx.fillText(
           `${i+1}. ${top[i].name || "Unknown"} — ${top[i].money || 0} $`,
@@ -122,15 +95,28 @@ module.exports = {
         y+=35;
       }
 
-      encoder.addFrame(ctx);
+      const cache = path.join(__dirname,"cache");
+
+      if(!fs.existsSync(cache))
+        fs.mkdirSync(cache,{recursive:true});
+
+      const filePath = path.join(cache,`top_${Date.now()}.png`);
+
+      fs.writeFileSync(filePath,canvas.toBuffer());
+
+      if(!fs.existsSync(filePath))
+        return message.reply("❌ Image generate failed.");
+
+      return message.reply({
+        body:"🏆 Richest Users Leaderboard",
+        attachment:fs.createReadStream(filePath)
+      },()=>fs.unlinkSync(filePath));
+
+    } catch(err){
+
+      console.error("TOP COMMAND ERROR:",err);
+      return message.reply("⚠️ Leaderboard failed.");
+
     }
-
-    encoder.finish();
-
-    message.reply({
-      body:"🏆 Richest Users Leaderboard",
-      attachment:fs.createReadStream(filePath)
-    },()=>fs.unlinkSync(filePath));
-
   }
 };
