@@ -1,77 +1,104 @@
-function formatBold(text) {
-  const boldMap = {
-    A:'𝗔',B:'𝗕',C:'𝗖',D:'𝗗',E:'𝗘',F:'𝗙',G:'𝗚',H:'𝗛',I:'𝗜',J:'𝗝',K:'𝗞',L:'𝗟',M:'𝗠',
-    N:'𝗡',O:'𝗢',P:'𝗣',Q:'𝗤',R:'𝗥',S:'𝗦',T:'𝗧',U:'𝗨',V:'𝗩',W:'𝗪',X:'𝗫',Y:'𝗬',Z:'𝗭',
-    a:'𝗮',b:'𝗯',c:'𝗰',d:'𝗱',e:'𝗲',f:'𝗳',g:'𝗴',h:'𝗵',i:'𝗶',j:'𝗷',k:'𝗸',l:'𝗹',m:'𝗺',
-    n:'𝗻',o:'𝗼',p:'𝗽',q:'𝗾',r:'𝗿',s:'𝘀',t:'𝘁',u:'𝘂',v:'𝘃',w:'𝘄',x:'𝘅',y:'𝘆',z:'𝘇',
-    0:'𝟬',1:'𝟭',2:'𝟮',3:'𝟯',4:'𝟰',5:'𝟱',6:'𝟲',7:'𝟳',8:'𝟴',9:'𝟵',
-  };
-  return String(text).split("").map(c => boldMap[c] || c).join("");
-}
-
-function formatMoney(amount) {
-  if (amount === undefined || amount === null) return "0";
-  const suffixes = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "De"];
-  let tier = 0;
-  let num = Number(amount);
-  while (num >= 1000 && tier < suffixes.length - 1) {
-    num /= 1000;
-    tier++;
-  }
-  return num.toFixed(2).replace(/\.00$/, "") + " " + suffixes[tier];
-}
+const fs = require("fs-extra");
+const path = require("path");
+const GIFEncoder = require("gifencoder");
+const { createCanvas, loadImage } = require("canvas");
 
 module.exports = {
   config: {
     name: "top",
-    aliases: ["rich", "leaderboard", "coinstop"],
-    version: "2.0.0",
-    author: "MAHBUB ALIHSAN SHOUROV",
-    countDown: 5,
+    version: "3.0",
+    author: "Shourov",
     role: 0,
-    shortDescription: "Show top 15 richest users",
-    longDescription: "Show top 15 richest users from local database",
     category: "economy",
     guide: "{p}top"
   },
 
   onStart: async function ({ message, usersData }) {
-    try {
-      const allUsers = await usersData.getAll();
 
-      if (!allUsers || allUsers.length === 0) {
-        return message.reply("📛 এখনো কোনো ইউজারের ব্যালেন্স নেই!");
-      }
+    const allUsers = await usersData.getAll();
 
-      allUsers.sort((a, b) => (b.money || 0) - (a.money || 0));
+    allUsers.sort((a,b)=> (b.money||0)-(a.money||0));
 
-      let msg = "💸 𝗧𝗼𝗽 𝟭𝟱 𝗥𝗶𝗰𝗵𝗲𝘀𝘁 𝗨𝘀𝗲𝗿𝘀 💸\n";
-      msg += "━━━━━━━━━━━━━━━\n";
+    const top = allUsers.slice(0,10);
 
-      let count = 0;
-      for (const user of allUsers) {
-        if (count >= 15) break;
+    const width = 900;
+    const height = 600;
 
-        const uid = user.userID;
-        let name = user.name || "Unknown";
+    const encoder = new GIFEncoder(width,height);
 
-        if (!name) name = "Unknown";
+    const cache = path.join(__dirname,"cache");
+    if(!fs.existsSync(cache)) fs.mkdirSync(cache,{recursive:true});
 
-        let boldName = /^[A-Za-z0-9\s]+$/.test(name) ? formatBold(name) : name;
+    const filePath = path.join(cache,`top_${Date.now()}.gif`);
 
-        const moneyVal = user.money || 0;
-        const moneyFormatted = formatMoney(moneyVal);
-        const boldMoney = formatBold(moneyFormatted + " $");
+    encoder.createReadStream().pipe(fs.createWriteStream(filePath));
 
-        msg += `${count + 1}. ${boldName} — ${boldMoney}\n`;
-        count++;
-      }
+    encoder.start();
+    encoder.setRepeat(0);
+    encoder.setDelay(120);
 
-      return message.reply(msg);
+    const canvas = createCanvas(width,height);
+    const ctx = canvas.getContext("2d");
 
-    } catch (err) {
-      console.error(err);
-      return message.reply("⚠️ টপ লিস্ট লোড করতে সমস্যা হচ্ছে (system error).");
+    const avatars = [];
+
+    for(let i=0;i<3;i++){
+      avatars.push(await loadImage(await usersData.getAvatarUrl(top[i].userID)));
     }
+
+    for(let frame=0;frame<15;frame++){
+
+      ctx.fillStyle="#0f0f0f";
+      ctx.fillRect(0,0,width,height);
+
+      const glow = 6 + Math.sin(frame*0.3)*4;
+
+      ctx.lineWidth = glow;
+      ctx.strokeStyle="#00ffff";
+      ctx.strokeRect(10,10,width-20,height-20);
+
+      ctx.font="bold 40px Arial";
+      ctx.fillStyle="#ffffff";
+
+      const move = Math.sin(frame*0.3)*10;
+
+      ctx.fillText("TOP RICHEST USERS",280+move,60);
+
+      for(let i=0;i<3;i++){
+
+        const x = 150 + i*250;
+
+        ctx.beginPath();
+        ctx.arc(x,200,70,0,Math.PI*2);
+        ctx.clip();
+        ctx.drawImage(avatars[i],x-70,130,140,140);
+        ctx.restore();
+
+        ctx.font="22px Arial";
+        ctx.fillText(`#${i+1}`,x-10,300);
+
+        ctx.font="18px Arial";
+        ctx.fillText(top[i].name||"Unknown",x-80,330);
+
+      }
+
+      ctx.font="20px Arial";
+
+      let y=380;
+
+      for(let i=3;i<top.length;i++){
+        ctx.fillText(`${i+1}. ${top[i].name} — ${top[i].money}`,120,y);
+        y+=30;
+      }
+
+      encoder.addFrame(ctx);
+    }
+
+    encoder.finish();
+
+    message.reply({
+      body:"🏆 Richest Leaderboard",
+      attachment:fs.createReadStream(filePath)
+    },()=>fs.unlinkSync(filePath));
   }
 };
