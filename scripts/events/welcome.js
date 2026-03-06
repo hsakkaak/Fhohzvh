@@ -243,7 +243,7 @@ we warmly welcome you here!
 
 ━━━━━━━━━━━━━━━━━━
 
-👑 BOT OWNER: 𝐀𝐥𝐢𝐡𝐬𝐚𝐧 𝐒𝐡𝐨𝐮𝐫𝐨𝐯
+👑 BOT OWNER: ${getOwner()}
 
 ╚════════ ✦ ✦ ✦ ════════╝`,
 
