@@ -1,4 +1,4 @@
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
 const { loadImage, createCanvas } = require("canvas");
@@ -7,231 +7,129 @@ module.exports = {
   config: {
     name: "hug",
     aliases: ["embrace"],
-    version: "1.0",
-    author: "Fahad Islam",
+    version: "2.0",
+    author: "Shourov Fix",
     countDown: 5,
     role: 0,
-    shortDescription: "Give someone a warm hug! 💕",
-    longDescription: "A refreshed hug command with reconnection handling and beautiful design",
+    shortDescription: "Give someone a hug",
     category: "fun",
-    guide: "{pn} @mention or reply to a message",
+    guide: "{p}hug @mention / reply"
   },
 
-  onStart: async function ({ event, api, usersData, args }) {
+  onStart: async function ({ api, event, usersData }) {
     try {
-      // Send a processing message
-      const processingMsg = await api.sendMessage("🔄 Preparing a warm hug for you...", event.threadID);
 
-      let mention = Object.keys(event.mentions)[0];
-      let targetID = mention || event.messageReply?.senderID;
+      let targetID =
+        Object.keys(event.mentions)[0] ||
+        event.messageReply?.senderID;
 
-      if (!targetID) {
-        await api.sendMessage("💝 Who would you like to hug? Please tag someone or reply to their message!", event.threadID, event.messageID);
-        await api.unsendMessage(processingMsg.messageID);
-        return;
-      }
+      if (!targetID)
+        return api.sendMessage(
+          "❌ Please mention or reply someone to hug 🤗",
+          event.threadID,
+          event.messageID
+        );
 
-      // Don't allow self-hug
-      if (targetID === event.senderID) {
-        await api.sendMessage("🤗 You can't hug yourself! But here's a virtual hug from me! 💕", event.threadID, event.messageID);
-        await api.unsendMessage(processingMsg.messageID);
-        return;
-      }
+      if (targetID === event.senderID)
+        return api.sendMessage(
+          "🤗 You cannot hug yourself!",
+          event.threadID,
+          event.messageID
+        );
 
-      const huggerID = event.senderID;
+      const senderID = event.senderID;
 
-      // Get user names with fallback
-      const huggerName = await usersData.getName(huggerID) || "Someone";
-      const targetName = event.mentions[mention] || (await usersData.getName(targetID)) || "Friend";
+      const name1 = await usersData.getName(senderID);
+      const name2 = await usersData.getName(targetID);
 
-      const getAvatar = async (uid, retryCount = 0) => {
-        try {
-          const url = `https://graph.facebook.com/${uid}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`;
-          const avatarPath = path.join(__dirname, `tmp/${uid}_avatar.png`);
+      const tmpDir = path.join(__dirname, "tmp");
+      if (!fs.existsSync(tmpDir))
+        fs.mkdirSync(tmpDir, { recursive: true });
 
-          // Create tmp directory if it doesn't exist
-          if (!fs.existsSync(path.join(__dirname, "tmp"))) {
-            fs.mkdirSync(path.join(__dirname, "tmp"));
-          }
+      const avt1 = path.join(tmpDir, `avt1_${Date.now()}.png`);
+      const avt2 = path.join(tmpDir, `avt2_${Date.now()}.png`);
+      const imgPath = path.join(tmpDir, `hug_${Date.now()}.png`);
 
-          const res = await axios.get(url, { 
-            responseType: "arraybuffer",
-            timeout: 10000 // 10 second timeout
-          });
+      // avatar download
+      const avatar1 = (
+        await axios.get(
+          `https://graph.facebook.com/${senderID}/picture?width=512&height=512`,
+          { responseType: "arraybuffer" }
+        )
+      ).data;
 
-          fs.writeFileSync(avatarPath, res.data);
-          return avatarPath;
-        } catch (err) {
-          if (retryCount < 2) {
-            console.log(`Retrying avatar fetch for ${uid}... Attempt ${retryCount + 1}`);
-            return await getAvatar(uid, retryCount + 1);
-          }
-          console.error(`Error fetching avatar for user ${uid}: ${err.message}`);
-          return "";
-        }
-      };
+      const avatar2 = (
+        await axios.get(
+          `https://graph.facebook.com/${targetID}/picture?width=512&height=512`,
+          { responseType: "arraybuffer" }
+        )
+      ).data;
 
-      // Update processing message
-      await api.sendMessage("📸 Getting avatars and creating your hug...", event.threadID, processingMsg.messageID);
+      fs.writeFileSync(avt1, avatar1);
+      fs.writeFileSync(avt2, avatar2);
 
-      // Load background image with retry logic
-      let bg;
-      let bgLoaded = false;
-      let retryCount = 0;
+      const background = await loadImage(
+        "https://i.imgur.com/JJ4Wq5E.png"
+      );
 
-      while (!bgLoaded && retryCount < 3) {
-        try {
-          bg = await loadImage("https://files.catbox.moe/n7x1vy.jpg");
-          bgLoaded = true;
-        } catch (bgError) {
-          retryCount++;
-          console.log(`Background load failed, retrying... (${retryCount}/3)`);
-          if (retryCount === 3) {
-            // Fallback to a solid color background
-            await api.sendMessage("🎨 Using fallback background...", event.threadID, processingMsg.messageID);
-            bg = {
-              width: 800,
-              height: 600
-            };
-          }
-        }
-      }
-
-      const canvas = createCanvas(bg.width || 800, bg.height || 600);
+      const canvas = createCanvas(background.width, background.height);
       const ctx = canvas.getContext("2d");
 
-      // Draw background or fallback
-      if (bgLoaded) {
-        ctx.drawImage(bg, 0, 0);
-      } else {
-        // Create a fallback gradient background
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        gradient.addColorStop(0, '#FFB6C1');
-        gradient.addColorStop(1, '#FF69B4');
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
+      ctx.drawImage(background, 0, 0);
 
-      // Get avatars with retry
-      const huggerAvatarPath = await getAvatar(huggerID);
-      const targetAvatarPath = await getAvatar(targetID);
+      const avatarImg1 = await loadImage(avt1);
+      const avatarImg2 = await loadImage(avt2);
 
-      if (!huggerAvatarPath || !targetAvatarPath) {
-        await api.sendMessage("❌ Failed to load user avatars. Please try again!", event.threadID, event.messageID);
-        await api.unsendMessage(processingMsg.messageID);
-        return;
-      }
-
-      const huggerAvatar = await loadImage(huggerAvatarPath);
-      const targetAvatar = await loadImage(targetAvatarPath);
-
-      // Draw hugger avatar (circular)
+      // LEFT
       ctx.save();
       ctx.beginPath();
-      ctx.arc(285, 160, 50, 0, Math.PI * 2);
-      ctx.closePath();
+      ctx.arc(300, 200, 90, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(huggerAvatar, 235, 110, 110, 100);
+      ctx.drawImage(avatarImg1, 210, 110, 180, 180);
       ctx.restore();
 
-      // Draw target avatar (circular)
+      // RIGHT
       ctx.save();
       ctx.beginPath();
-      ctx.arc(390, 200, 50, 0, Math.PI * 2);
-      ctx.closePath();
+      ctx.arc(520, 200, 90, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(targetAvatar, 340, 150, 100, 100);
+      ctx.drawImage(avatarImg2, 430, 110, 180, 180);
       ctx.restore();
 
-      // Add profile-style text with shadow for better readability
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-      ctx.shadowBlur = 5;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
+      fs.writeFileSync(imgPath, canvas.toBuffer());
 
-      ctx.font = "bold 32px Arial";
-      ctx.fillStyle = "#FF1493";
-      ctx.textAlign = "center";
-      ctx.fillText("💕 Virtual Hug 💕", canvas.width / 2, 50);
+      fs.unlinkSync(avt1);
+      fs.unlinkSync(avt2);
 
-      ctx.font = "bold 22px Arial";
-      ctx.fillStyle = "#FFFFFF";
-      ctx.fillText(`${huggerName}`, 210, 400);
-      ctx.fillText(`${targetName}`, 490, 400);
-
-      ctx.font = "20px Arial";
-      ctx.fillStyle = "#FFD700";
-      ctx.fillText("", canvas.width / 2, 250);
-
-      // Remove shadow for the rest
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-
-      // Add a cute border
-      ctx.strokeStyle = "#FF69B4";
-      ctx.lineWidth = 10;
-      ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-      // Save the final image
-      const output = path.join(__dirname, "tmp/hug_output.png");
-      const buffer = canvas.toBuffer("image/png");
-      fs.writeFileSync(output, buffer);
-
-      // Final processing message
-      await api.sendMessage("✨ Finalizing your special hug moment...", event.threadID, processingMsg.messageID);
-
-      // Send message with the image
-      const hugMessages = [
-        `💝 ${huggerName} just gave ${targetName} a warm, comforting hug! 🥰\n\n"May this hug bring you comfort and joy! 🌸"`,
-        `🤗 ${huggerName} embraces ${targetName} with a heartfelt hug! 💕\n\n"Sending positive vibes and warm wishes! ✨"`,
-        `💞 ${huggerName} shares a special hug with ${targetName}! 🌟\n\n"Sometimes a hug is all you need to feel better! 🫂"`
+      const messages = [
+        `${name1} 🤗 hugged ${name2}`,
+        `${name1} sends a warm hug to ${name2}`,
+        `${name1} gives ${name2} a lovely hug 💕`
       ];
 
-      const randomMessage = hugMessages[Math.floor(Math.random() * hugMessages.length)];
+      const msg = messages[Math.floor(Math.random() * messages.length)];
 
-      const message = {
-        body: randomMessage,
-        attachment: fs.createReadStream(output),
-        mentions: [
-          { tag: targetName, id: targetID },
-          { tag: huggerName, id: huggerID }
-        ]
-      };
+      return api.sendMessage(
+        {
+          body: msg,
+          mentions: [
+            { tag: name1, id: senderID },
+            { tag: name2, id: targetID }
+          ],
+          attachment: fs.createReadStream(imgPath)
+        },
+        event.threadID,
+        () => fs.unlinkSync(imgPath),
+        event.messageID
+      );
 
-      await api.sendMessage(message, event.threadID, async (err) => {
-        // Clean up temporary files
-        try {
-          if (fs.existsSync(output)) fs.unlinkSync(output);
-          if (fs.existsSync(huggerAvatarPath)) fs.unlinkSync(huggerAvatarPath);
-          if (fs.existsSync(targetAvatarPath)) fs.unlinkSync(targetAvatarPath);
-          await api.unsendMessage(processingMsg.messageID);
-        } catch (cleanupErr) {
-          console.error("Error cleaning up files:", cleanupErr);
-        }
-
-        if (err) {
-          console.error("Error sending hug message:", err);
-          await api.sendMessage("❌ Failed to send the hug image, but the hug was sent with love! 💕", event.threadID);
-        }
-      });
-
-    } catch (error) {
-      console.error("Error in hug command:", error);
-      await api.sendMessage("❌ I encountered an issue while preparing your hug! 😔 Please try again in a moment.", event.threadID, event.messageID);
-
-      // Try to clean up processing message
-      try {
-        await api.unsendMessage(processingMsg?.messageID);
-      } catch (e) {
-        // Ignore cleanup errors
-      }
+    } catch (err) {
+      console.log("HUG ERROR:", err);
+      return api.sendMessage(
+        "⚠️ Hug command failed.",
+        event.threadID,
+        event.messageID
+      );
     }
-  },
-
-  // Additional event handler for reconnection
-  onReconnect: function({ api }) {
-    console.log('🔄 Hug command reconnected and ready to use!');
   }
 };
