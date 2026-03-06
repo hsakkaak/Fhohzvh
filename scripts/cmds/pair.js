@@ -1,77 +1,72 @@
-const axios = require("axios");
 const fs = require("fs-extra");
-const path = require("path");
+const axios = require("axios");
 const { createCanvas, loadImage } = require("canvas");
+const path = require("path");
 
 module.exports = {
   config: {
     name: "pair",
-    version: "2.0",
-    author: "Alihsan Shourov",
-    countDown: 10,
+    version: "3.0",
+    author: "Shourov",
+    countDown: 5,
     role: 0,
-    category: "LOVE",
-    guide: "{pn} @mention / reply / UID"
+    description: "Pair with someone ❤️",
+    category: "fun",
+    guide: "{p}pair @mention / reply / UID"
   },
 
-  onStart: async function ({
-    api,
-    event,
-    usersData,
-    args,
-    resolveTargetID
-  }) {
+  onStart: async function ({ api, event, usersData, args }) {
     try {
+
       const senderID = event.senderID;
+      let targetID;
 
-      // ===== TARGET DETECT =====
-      let targetID = resolveTargetID(args);
+      // ===== Mention =====
+      if (Object.keys(event.mentions).length > 0) {
+        targetID = Object.keys(event.mentions)[0];
+      }
 
-      // UID support
-      if (!targetID && args[0] && !isNaN(args[0])) {
+      // ===== Reply =====
+      else if (event.messageReply) {
+        targetID = event.messageReply.senderID;
+      }
+
+      // ===== UID =====
+      else if (args[0] && !isNaN(args[0])) {
         targetID = args[0];
       }
 
-      // If no mention/reply/uid → random partner
-      if (!targetID) {
+      // ===== Random Pair =====
+      else {
         const threadInfo = await api.getThreadInfo(event.threadID);
+
         const members = threadInfo.participantIDs.filter(
-          id => id !== senderID && id !== api.getCurrentUserID()
+          id => id != senderID && id != api.getCurrentUserID()
         );
+
         if (!members.length)
           return api.sendMessage("❌ No partner found.", event.threadID);
+
         targetID = members[Math.floor(Math.random() * members.length)];
       }
 
-      // ===== GET NAMES =====
-      const name1 = await usersData.getName(senderID) || "Unknown";
-      const name2 = await usersData.getName(targetID) || "Unknown";
+      // ===== Names =====
+      const name1 = await usersData.getName(senderID) || "User";
+      const name2 = await usersData.getName(targetID) || "User";
 
-      // ===== RANDOM LOVE % =====
-      const percentage = Math.floor(Math.random() * 100) + 1;
+      // ===== Love % =====
+      const percent = Math.floor(Math.random() * 101);
 
-      const loveNotes = [
-        "Two souls, one destiny 💞",
-        "Love found its way 💖",
-        "Perfect match ✨",
-        "Hearts connected 💘"
-      ];
-      const note =
-        loveNotes[Math.floor(Math.random() * loveNotes.length)];
+      // ===== Avatar =====
+      const avatar1 = await usersData.getAvatarUrl(senderID);
+      const avatar2 = await usersData.getAvatarUrl(targetID);
 
-      // ===== AVATAR GRAPH API =====
       const avt1 = (
-        await axios.get(
-          `https://graph.facebook.com/${senderID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
-          { responseType: "arraybuffer" }
-        )
+        await axios.get(avatar1, { responseType: "arraybuffer" })
       ).data;
 
       const avt2 = (
-        await axios.get(
-          `https://graph.facebook.com/${targetID}/picture?width=720&height=720&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`,
-          { responseType: "arraybuffer" }
-        )
+        await axios.get(avatar2, { responseType: "arraybuffer" })
       ).data;
 
       const tmpDir = path.join(__dirname, "tmp");
@@ -84,55 +79,51 @@ module.exports = {
       fs.writeFileSync(pathAvt1, Buffer.from(avt1));
       fs.writeFileSync(pathAvt2, Buffer.from(avt2));
 
-      // ===== BACKGROUND =====
-      const bg = await loadImage(
-        "https://i.ibb.co/RBRLmRt/Pics-Art-05-14-10-47-00.jpg"
+      // ===== Canvas =====
+      const background = await loadImage(
+        "https://i.imgur.com/QZ8F5ZP.jpg"
       );
 
-      const canvas = createCanvas(bg.width, bg.height);
+      const canvas = createCanvas(background.width, background.height);
       const ctx = canvas.getContext("2d");
 
-      ctx.drawImage(bg, 0, 0, bg.width, bg.height);
+      ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-      const avatar1 = await loadImage(pathAvt1);
-      const avatar2 = await loadImage(pathAvt2);
+      const avatarImg1 = await loadImage(pathAvt1);
+      const avatarImg2 = await loadImage(pathAvt2);
 
-      // LEFT PROFILE
+      // LEFT
       ctx.save();
       ctx.beginPath();
-      ctx.arc(330, 340, 160, 0, Math.PI * 2);
-      ctx.closePath();
+      ctx.arc(300, 320, 150, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(avatar1, 170, 180, 320, 320);
+      ctx.drawImage(avatarImg1, 150, 170, 300, 300);
       ctx.restore();
 
-      // RIGHT PROFILE
+      // RIGHT
       ctx.save();
       ctx.beginPath();
-      ctx.arc(1000, 340, 160, 0, Math.PI * 2);
-      ctx.closePath();
+      ctx.arc(900, 320, 150, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(avatar2, 840, 180, 320, 320);
+      ctx.drawImage(avatarImg2, 750, 170, 300, 300);
       ctx.restore();
 
       fs.writeFileSync(pathImg, canvas.toBuffer());
 
-      // Cleanup avatar temp
       fs.unlinkSync(pathAvt1);
       fs.unlinkSync(pathAvt2);
 
-      const mention1 = { tag: `@${name1}`, id: senderID };
-      const mention2 = { tag: `@${name2}`, id: targetID };
+      const mention1 = { tag: name1, id: senderID };
+      const mention2 = { tag: name2, id: targetID };
 
-      const bodyText =
-        `💞 𝐋𝐨𝐯𝐞 𝐏𝐚𝐢𝐫 💞\n\n` +
-        `💑 ${mention1.tag} ❤️ ${mention2.tag}\n` +
-        `💌 ${note}\n` +
-        `🔗 Love Match: ${percentage}% 💖`;
+      const msg =
+        `💞 LOVE PAIR 💞\n\n` +
+        `${name1} ❤️ ${name2}\n\n` +
+        `💘 Love Match: ${percent}%`;
 
       return api.sendMessage(
         {
-          body: bodyText,
+          body: msg,
           mentions: [mention1, mention2],
           attachment: fs.createReadStream(pathImg)
         },
@@ -142,7 +133,7 @@ module.exports = {
       );
 
     } catch (err) {
-      console.error("PAIR ERROR:", err);
+      console.log(err);
       api.sendMessage("⚠️ Pair command failed.", event.threadID);
     }
   }
