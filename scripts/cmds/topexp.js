@@ -1,39 +1,65 @@
+function formatExp(num) {
+  if (!num) return "0";
+  const units = ["", "K", "M", "B", "T"];
+  let i = 0;
+  while (num >= 1000 && i < units.length - 1) {
+    num /= 1000;
+    i++;
+  }
+  return num.toFixed(2).replace(/\.00$/, "") + units[i];
+}
+
 module.exports = {
  config: {
  name: "topexp",
- version: "1.0",
- author: "Chitron Bhattacharjee",
+ version: "2.0",
+ author: "Alihsan Shourov",
  role: 0,
- shortDescription: {
- en: "Top 10 Ranks"
- },
- longDescription: {
- en: ""
- },
  category: "group",
+ shortDescription: {
+ en: "Top EXP Rank"
+ },
  guide: {
- en: "{pn}"
+ en: "{pn}topexp"
  }
  },
- onStart: async function ({ api, args, message, event, usersData }) {
+
+ onStart: async function ({ message, usersData }) {
+
  const allUsers = await usersData.getAll();
 
- // Filter out users with no experience points
  const usersWithExp = allUsers.filter(user => user.exp > 0);
 
- if (usersWithExp.length < 10) {
- message.reply("🚫 There are not enough users with experience points to display a top 20.");
- return;
- }
+ if (!usersWithExp.length)
+ return message.reply("❌ No users have EXP yet.");
 
- const topExp = usersWithExp.sort((a, b) => b.exp - a.exp).slice(0, 20);
+ const top = usersWithExp
+ .sort((a,b)=>b.exp-a.exp)
+ .slice(0,20);
 
- const topUsersList = topExp.map((user, index) => {
- return `🏅 ${index + 1}. ${user.name}: ${user.exp} XP 💯`;
+ const icons = ["👑","🥈","🥉","🏅","🏅","🏅","🏅","🏅","🏅","🏅",
+ "🏅","🏅","🏅","🏅","🏅","🏅","🏅","🏅","🏅","🏅"];
+
+ let msg = "";
+
+ msg += "╔══════════════════════╗\n";
+ msg += " 🌟 𝗧𝗢𝗣 𝟮𝟬 𝗘𝗫𝗣 𝗥𝗔𝗡𝗞 🌟\n";
+ msg += "╚══════════════════════╝\n\n";
+
+ top.forEach((user,index)=>{
+
+ const name = user.name || "Unknown";
+ const exp = formatExp(user.exp);
+
+ msg += `${icons[index]} ${index+1}. ${name}\n`;
+ msg += `      ⭐ EXP: ${exp}\n\n`;
+
  });
 
- const messageText = `🌟𝐓𝐨𝐩 𝟐𝟎 𝐄𝐱𝐩 𝐑𝐚𝐧𝐤 🌟\n\n${topUsersList.join('\n')}\n\n🏆 Keep going to reach the top! 🏆`;
+ msg += "━━━━━━━━━━━━━━━━━━━━━━\n";
+ msg += "🔥 Keep chatting to level up!";
 
- message.reply(messageText);
+ message.reply(msg);
+
  }
 };
