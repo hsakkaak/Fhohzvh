@@ -100,7 +100,7 @@ module.exports = {
       if (fs.existsSync(filePath) && (await fs.stat(filePath)).size > 0) {
         await api.sendMessage(
           {
-            body: `${caption}\n\nOwner: Rocky — m.me/rocky.vai.320`,
+            body: `${caption}\n\nOwner: Alihsan Shourov`,
             attachment: fs.createReadStream(filePath),
           },
           threadID,
