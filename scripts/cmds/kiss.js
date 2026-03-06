@@ -5,7 +5,7 @@ const path = require("path");
 module.exports = {
   config: {
     name: "kiss",
-    version: "2.0.0",
+    version: "2.0.1",
     author: "Alihsan Shourov",
     countDown: 5,
     role: 0,
@@ -18,56 +18,41 @@ module.exports = {
     try {
       const { senderID } = event;
 
-      // ===== Get Target =====
       let targetID =
         event.messageReply?.senderID ||
         Object.keys(event.mentions || {})[0];
 
       if (!targetID) {
-        return message.reply(
-          "❌ Please mention or reply someone to kiss 😘"
-        );
+        return message.reply("❌ Please mention or reply someone to kiss 😘");
       }
 
-      // ===== Get Avatars =====
       const avatarURL1 = await usersData.getAvatarUrl(senderID);
       const avatarURL2 = await usersData.getAvatarUrl(targetID);
 
       const canvas = createCanvas(950, 850);
       const ctx = canvas.getContext("2d");
 
-      // Background
-      const background = await loadImage(
-        "https://files.catbox.moe/6qg782.jpg"
-      );
+      const background = await loadImage("https://files.catbox.moe/6qg782.jpg");
       ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
       const avatar1 = await loadImage(avatarURL1);
       const avatar2 = await loadImage(avatarURL2);
 
-      // Draw user 1
       ctx.save();
       ctx.beginPath();
       ctx.arc(725, 250, 85, 0, Math.PI * 2);
-      ctx.closePath();
       ctx.clip();
       ctx.drawImage(avatar1, 640, 170, 170, 170);
       ctx.restore();
 
-      // Draw user 2
       ctx.save();
       ctx.beginPath();
       ctx.arc(175, 370, 85, 0, Math.PI * 2);
-      ctx.closePath();
       ctx.clip();
       ctx.drawImage(avatar2, 90, 280, 170, 170);
       ctx.restore();
 
-      // Temp folder
-      const tmpDir = path.join(__dirname, "tmp");
-      if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-
-      const outputPath = path.join(tmpDir, `kiss_${Date.now()}.png`);
+      const outputPath = path.join(__dirname, "kiss.png");
       const buffer = canvas.toBuffer("image/png");
 
       fs.writeFileSync(outputPath, buffer);
