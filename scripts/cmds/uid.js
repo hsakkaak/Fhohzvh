@@ -1,63 +1,113 @@
-const { findUid } = global.utils;
-const regExCheckURL = /^(http|https):\/\/[^ "]+$/;
+const fs = require("fs-extra");
+const path = require("path");
+const GIFEncoder = require("gifencoder");
+const { createCanvas, loadImage } = require("canvas");
 
 module.exports = {
-	config: {
-		name: "uid",
-		version: "1.3",
-		author: "NTKhang",
-		countDown: 5,
-		role: 0,
-		description: {
-			vi: "Xem user id facebook của người dùng",
-			en: "View facebook user id of user"
-		},
-		category: "info",
-		guide: {
-			vi: "   {pn}: dùng để xem id facebook của bạn"
-				+ "\n   {pn} @tag: xem id facebook của những người được tag"
-				+ "\n   {pn} <link profile>: xem id facebook của link profile"
-				+ "\n   Phản hồi tin nhắn của người khác kèm lệnh để xem id facebook của họ",
-			en: "   {pn}: use to view your facebook user id"
-				+ "\n   {pn} @tag: view facebook user id of tagged people"
-				+ "\n   {pn} <profile link>: view facebook user id of profile link"
-				+ "\n   Reply to someone's message with the command to view their facebook user id"
-		}
-	},
+  config: {
+    name: "uid",
+    version: "3.0",
+    author: "Shourov",
+    countDown: 5,
+    role: 0,
+    description: "UID animated banner",
+    category: "info",
+    guide: "{p}uid @mention | reply"
+  },
 
-	langs: {
-		vi: {
-			syntaxError: "Vui lòng tag người muốn xem uid hoặc để trống để xem uid của bản thân"
-		},
-		en: {
-			syntaxError: "Please tag the person you want to view uid or leave it blank to view your own uid"
-		}
-	},
+  onStart: async function ({ message, event, usersData }) {
 
-	onStart: async function ({ message, event, args, getLang }) {
-		if (event.messageReply)
-			return message.reply(event.messageReply.senderID);
-		if (!args[0])
-			return message.reply(event.senderID);
-		if (args[0].match(regExCheckURL)) {
-			let msg = '';
-			for (const link of args) {
-				try {
-					const uid = await findUid(link);
-					msg += `${link} => ${uid}\n`;
-				}
-				catch (e) {
-					msg += `${link} (ERROR) => ${e.message}\n`;
-				}
-			}
-			message.reply(msg);
-			return;
-		}
+    try {
 
-		let msg = "";
-		const { mentions } = event;
-		for (const id in mentions)
-			msg += `${mentions[id].replace("@", "")}: ${id}\n`;
-		message.reply(msg || getLang("syntaxError"));
-	}
+      let targetID =
+        Object.keys(event.mentions)[0] ||
+        event.messageReply?.senderID ||
+        event.senderID;
+
+      const name = await usersData.getName(targetID);
+      const avatarURL = await usersData.getAvatarUrl(targetID);
+
+      const width = 800;
+      const height = 400;
+
+      const encoder = new GIFEncoder(width, height);
+      const tmpDir = path.join(__dirname, "tmp");
+
+      if (!fs.existsSync(tmpDir))
+        fs.mkdirSync(tmpDir, { recursive: true });
+
+      const filePath = path.join(tmpDir, `uid_${Date.now()}.gif`);
+
+      const stream = encoder.createWriteStream().pipe(fs.createWriteStream(filePath));
+
+      encoder.start();
+      encoder.setRepeat(0);
+      encoder.setDelay(80);
+      encoder.setQuality(10);
+
+      const canvas = createCanvas(width, height);
+      const ctx = canvas.getContext("2d");
+
+      const avatar = await loadImage(avatarURL);
+
+      for (let i = 0; i < 20; i++) {
+
+        // background
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(0, 0, width, height);
+
+        // pulse glow circle
+        const radius = 100 + Math.sin(i * 0.3) * 20;
+
+        ctx.beginPath();
+        ctx.arc(200, 200, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = "#00ffff";
+        ctx.lineWidth = 8;
+        ctx.stroke();
+
+        // avatar
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(200, 200, 90, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(avatar, 110, 110, 180, 180);
+        ctx.restore();
+
+        // moving text
+        const move = Math.sin(i * 0.4) * 20;
+
+        ctx.font = "bold 40px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(name, 400 + move, 180);
+
+        ctx.font = "bold 26px Arial";
+        ctx.fillStyle = "#00ff00";
+        ctx.fillText(`UID: ${targetID}`, 400 + move, 230);
+
+        ctx.font = "24px Arial";
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(`facebook.com/${targetID}`, 400 + move, 280);
+
+        encoder.addFrame(ctx);
+      }
+
+      encoder.finish();
+
+      return message.reply(
+        {
+          body:
+            `👤 Name: ${name}\n` +
+            `🆔 UID: ${targetID}\n` +
+            `🔗 https://facebook.com/${targetID}`,
+          attachment: fs.createReadStream(filePath)
+        },
+        () => fs.unlinkSync(filePath)
+      );
+
+    } catch (err) {
+      console.log("UID ERROR:", err);
+      return message.reply("❌ UID animation failed.");
+    }
+
+  }
 };
