@@ -4,10 +4,17 @@ const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
 
+// encoded owner name
+const ownerEncoded = "QWxpaHNhbiBTaG91cm92";
+
+function getOwner(){
+return Buffer.from(ownerEncoded,"base64").toString("utf8");
+}
+
 module.exports = {
 config:{
 name:"welcome",
-version:"12.0",
+version:"12.1",
 author:"Alihsan Shourov",
 category:"events"
 },
@@ -89,30 +96,34 @@ const avatar = await loadImage(await usersData.getAvatarUrl(userID));
 
 const adderAvatar = await loadImage(await usersData.getAvatarUrl(adderID));
 
-const width = 900;
-const height = 450;
+const width = 700;
+const height = 350;
 
 const encoder = new GIFEncoder(width,height);
 
 const filePath = path.join(__dirname,"cache",`welcome_${userID}.gif`);
 
-encoder.createReadStream().pipe(fs.createWriteStream(filePath));
+await fs.ensureDir(path.dirname(filePath));
+
+const stream = encoder.createReadStream();
+
+const writeStream = fs.createWriteStream(filePath);
+
+stream.pipe(writeStream);
 
 encoder.start();
 encoder.setRepeat(0);
-encoder.setDelay(90);
-encoder.setQuality(10);
+encoder.setDelay(100);
+encoder.setQuality(20);
 
 const canvas = createCanvas(width,height);
 const ctx = canvas.getContext("2d");
 
-for(let frame=0; frame<40; frame++){
+for(let frame=0; frame<18; frame++){
 
-// moving gradient background
-const shift = frame*20;
-
+// moving background
 const grad = ctx.createLinearGradient(
-0+shift,
+frame*20,
 0,
 width,
 height
@@ -125,14 +136,14 @@ ctx.fillStyle = grad;
 ctx.fillRect(0,0,width,height);
 
 // stars
-for(let i=0;i<50;i++){
+for(let i=0;i<25;i++){
 
 ctx.beginPath();
 
 ctx.arc(
 Math.random()*width,
 Math.random()*height,
-2,
+1.5,
 0,
 Math.PI*2
 );
@@ -143,68 +154,70 @@ ctx.fill();
 }
 
 // pulse border
-const pulse = 75 + Math.sin(frame*0.3)*12;
+const pulse = 65 + Math.sin(frame*0.5)*10;
 
-// LEFT avatar (adder)
+// LEFT avatar
 ctx.save();
 ctx.beginPath();
-ctx.arc(250,100,70,0,Math.PI*2);
+ctx.arc(200,80,55,0,Math.PI*2);
 ctx.clip();
-ctx.drawImage(adderAvatar,180,30,140,140);
+ctx.drawImage(adderAvatar,145,25,110,110);
 ctx.restore();
 
 ctx.beginPath();
-ctx.arc(250,100,pulse,0,Math.PI*2);
+ctx.arc(200,80,pulse,0,Math.PI*2);
 ctx.strokeStyle="#ff0000";
-ctx.lineWidth=6;
+ctx.lineWidth=5;
 ctx.stroke();
 
-// RIGHT avatar (new member)
+// RIGHT avatar
 ctx.save();
 ctx.beginPath();
-ctx.arc(650,100,70,0,Math.PI*2);
+ctx.arc(500,80,55,0,Math.PI*2);
 ctx.clip();
-ctx.drawImage(avatar,580,30,140,140);
+ctx.drawImage(avatar,445,25,110,110);
 ctx.restore();
 
 ctx.beginPath();
-ctx.arc(650,100,pulse,0,Math.PI*2);
+ctx.arc(500,80,pulse,0,Math.PI*2);
 ctx.strokeStyle="#00ffff";
-ctx.lineWidth=6;
+ctx.lineWidth=5;
 ctx.stroke();
 
-// arrow middle
-ctx.font="bold 70px Arial";
+// arrow
+ctx.font="bold 55px Arial";
 ctx.fillStyle="#ffffff";
 ctx.textAlign="center";
-ctx.fillText("➜",450,115);
+ctx.fillText("➜",350,90);
 
 // welcome text
-ctx.font="bold 55px Arial";
-ctx.fillText("WELCOME",450,230);
+ctx.font="bold 40px Arial";
+ctx.fillText("WELCOME",350,180);
 
-// sliding username
-const slide = Math.sin(frame*0.25)*70;
+// sliding name
+const slide = Math.sin(frame*0.4)*50;
 
-ctx.font="bold 34px Arial";
+ctx.font="bold 26px Arial";
 ctx.fillStyle="#00ffff";
-ctx.fillText(userName,450+slide,280);
+ctx.fillText(userName,350+slide,220);
 
-// added by text
-ctx.font="bold 24px Arial";
+// added by
+ctx.font="bold 18px Arial";
 ctx.fillStyle="#ffd700";
-ctx.fillText("Added by "+adderName,450,320);
+ctx.fillText("Added by "+adderName,350,250);
 
-// owner text
-ctx.font="20px Arial";
+// owner decoded
+ctx.font="16px Arial";
 ctx.fillStyle="#ffffff";
-ctx.fillText("Owner: Alihsan Shourov",450,380);
+ctx.fillText("Owner: "+getOwner(),350,300);
 
 encoder.addFrame(ctx);
 
 }
 
 encoder.finish();
+
+writeStream.on("finish", async ()=>{
 
 await api.sendMessage({
 
@@ -219,6 +232,8 @@ threadID,
 ()=>fs.unlinkSync(filePath)
 
 );
+
+});
 
 }catch(err){
 
