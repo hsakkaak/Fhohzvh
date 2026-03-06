@@ -2,7 +2,7 @@ module.exports = {
   config: {
     name: "islamic",
     version: "7.0",
-    author: "Ullash ッ",
+    author: "ullash",
     countDown: 5,
     role: 0,
     shortDescription: "all video ðŸ“·",
@@ -49,7 +49,7 @@ module.exports = {
 
 let msg = ALIHSAN_SHOUROV[Math.floor(Math.random()*ALIHSAN_SHOUROV.length)]
 message.send({
-  body: 'video made by —͟͟͞͞𝐂𝐘𝐁𝐄𝐑 ☢️_𖣘 -𝐁𝐎𝐓 ⚠️ 𝑻𝑬𝑨𝑴_ ☢️',attachment: await global.utils.getStreamFromURL(msg)
+  body: 'video made by 𝐀𝐥𝐈𝐇𝐒𝐀𝐍 𝐒𝐇𝐎𝐔𝐑𝐎𝐕',attachment: await global.utils.getStreamFromURL(msg)
 })
 }
      }
