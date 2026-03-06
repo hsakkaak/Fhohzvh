@@ -28,7 +28,7 @@
     },
     "uptime6": {},
     "resend": {
-      "deltaNext": 5
+      "deltaNext": 2
     },
     "notice": {
       "delayPerGroup": 250
