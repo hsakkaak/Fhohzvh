@@ -68,8 +68,8 @@ async function createMarriageImage(one, two) {
   const background = await jimp.read("https://i.imgur.com/qyn1vO1.jpg");
 
   background.resize(432, 280)
-    .composite(avone.resize(80, 80), 180, 10)
-    .composite(avtwo.resize(80, 80), 120, 25);
+    .composite(avone.resize(60, 60), 190, 15)
+    .composite(avtwo.resize(60, 60), 130, 30);
 
   await background.writeAsync(outputPath);
 
