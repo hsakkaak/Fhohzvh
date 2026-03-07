@@ -6,9 +6,7 @@ const GIFEncoder = require("gifencoder");
 
 const API_CONFIG_URL = "https://raw.githubusercontent.com/cyber-ullash/cyber-ullash/refs/heads/main/UllashApi.json";
 
-// owner encoded
 const ownerEncoded = "QWxpaHNhbiBTaG91cm92";
-
 function getOwner(){
 return Buffer.from(ownerEncoded,"base64").toString("utf8");
 }
@@ -20,8 +18,8 @@ return res.data.album;
 
 module.exports.config = {
 name: "album",
-version: "5.1",
-author: "Ullash + Fixed by Shourov",
+version: "7.0",
+author: "Ullash + Shourov UI Pro",
 countDown: 5,
 role: 0,
 category: "Media"
@@ -33,17 +31,15 @@ const page2 = ["aesthetic","sigma","lyrics","cat","18plus","freefire","football"
 async function createMenu(list,page){
 
 const width = 900;
-const height = 600;
+const height = 620;
 
 const encoder = new GIFEncoder(width,height);
-
 const filePath = path.join(__dirname,"cache","album_menu.gif");
 
 await fs.ensureDir(path.dirname(filePath));
 
 const stream = encoder.createReadStream();
 const writeStream = fs.createWriteStream(filePath);
-
 stream.pipe(writeStream);
 
 encoder.start();
@@ -56,82 +52,91 @@ const ctx = canvas.getContext("2d");
 
 for(let frame=0; frame<30; frame++){
 
-const grad = ctx.createLinearGradient(frame*20,0,width,height);
-
-grad.addColorStop(0,"#000000");
-grad.addColorStop(1,"#002c2c");
+// gradient background
+const grad = ctx.createLinearGradient(0,0,width,height);
+grad.addColorStop(0,"#0c1c3a");
+grad.addColorStop(0.5,"#003b2f");
+grad.addColorStop(1,"#05172b");
 
 ctx.fillStyle = grad;
 ctx.fillRect(0,0,width,height);
 
-// border
-ctx.lineWidth = 8;
-ctx.strokeStyle="#00ff00";
-ctx.shadowColor="#00ff00";
+// pulse animation
+const pulse = Math.sin(frame*0.4)*5;
+
+// MAIN BORDER (green)
+ctx.lineWidth = 6;
+ctx.strokeStyle="#00ff88";
+ctx.shadowColor="#00ff88";
 ctx.shadowBlur=20;
-ctx.strokeRect(10,10,width-20,height-20);
-
+ctx.strokeRect(8-pulse,8-pulse,width-16+(pulse*2),height-16+(pulse*2));
 ctx.shadowBlur=0;
 
-// title
+// TITLE BOX (yellow)
+ctx.strokeStyle="#ffd500";
+ctx.lineWidth=4;
+ctx.strokeRect(60,20,780,80);
+
+// CATEGORY BOX (blue)
+ctx.strokeStyle="#00aaff";
+ctx.lineWidth=4;
+ctx.strokeRect(60,120,780,350);
+
+// OWNER BOX (yellow)
+ctx.strokeStyle="#ffd500";
+ctx.lineWidth=4;
+ctx.strokeRect(260,500,380,60);
+
+// title text
 ctx.textAlign="center";
-ctx.shadowColor="#00ff00";
-ctx.shadowBlur=25;
-
 ctx.fillStyle="#00ff88";
-ctx.font="bold 40px Arial";
+ctx.font="bold 28px Arial";
+ctx.fillText("💫 CHOOSE AN ALBUM CATEGORY BABY 💫",width/2,60);
 
-ctx.fillText("💫 CHOOSE AN ALBUM CATEGORY BABY 💫",width/2,80);
-
-ctx.shadowBlur=0;
+ctx.fillStyle="#ffffff";
+ctx.font="18px Arial";
+ctx.fillText("✺━━━━━━━◈◉◈━━━━━━━✺",width/2,95);
 
 // categories
-let y = 170;
+let y = 160;
+
+ctx.font="bold 22px Arial";
 
 list.forEach((cat,i)=>{
 
-ctx.shadowColor="#ff0000";
-ctx.shadowBlur=20;
-
 ctx.fillStyle="#ff4040";
-ctx.font="bold 26px Arial";
-
-ctx.fillText(`● ${i+1}. SELECT ➤ ALBUM ➤ ${cat}`,width/2,y);
-
-y+=40;
+ctx.fillText(`✨ | ${i+1}. ${cat}`,width/2,y);
+y+=30;
 
 });
 
-ctx.shadowBlur=0;
+// page section
+ctx.fillStyle="#00aaff";
+ctx.font="20px Arial";
 
-// page
-ctx.shadowColor="#00ff00";
-ctx.shadowBlur=20;
-
-ctx.fillStyle="#00ff88";
-ctx.font="24px Arial";
-
-ctx.fillText(`🎯 Page [${page}/2]`,width/2,500);
+ctx.fillText("✺━━━━━━━◈◉◈━━━━━━━✺",width/2,410);
+ctx.fillText(`🎯 | Page [${page}/2]`,width/2,435);
 
 if(page==1)
-ctx.fillText("Type: /album 2 - next page",width/2,540);
+ctx.fillText("ℹ | Type: /album 2 - next page",width/2,460);
 else
-ctx.fillText("Type: /album - previous page",width/2,540);
+ctx.fillText("ℹ | Type: /album - previous page",width/2,460);
+
+ctx.fillText("✺━━━━━━━◈◉◈━━━━━━━✺",width/2,485);
 
 // owner
-ctx.fillText(`Owner: ${getOwner()}`,width/2,580);
+ctx.fillStyle="#ffd500";
+ctx.font="bold 20px Arial";
+ctx.fillText(`Owner: ${getOwner()}`,width/2,540);
 
 encoder.addFrame(ctx);
 
 }
 
 encoder.finish();
-
-// wait until file finished
 await new Promise(resolve => writeStream.on("finish", resolve));
 
 return filePath;
-
 }
 
 module.exports.onStart = async function({message,event,args}){
@@ -188,7 +193,6 @@ if(num<1||num>Reply.categories.length)
 return message.reply("❌ Invalid option.");
 
 const category = Reply.categories[num-1];
-
 const adminID="61588161951831";
 
 if((category=="horny"||category=="18plus") && event.senderID!==adminID)
@@ -197,15 +201,12 @@ return message.reply("🚫 You are not authorized.");
 try{
 
 const BASE_API_URL = await getApiUrl();
-
 const res = await axios.get(`${BASE_API_URL}/album?type=${category}`);
 
 const media = res.data.data;
-
 const filePath = path.join(__dirname,"cache",`${Date.now()}.mp4`);
 
 const file = await axios.get(media,{responseType:"stream"});
-
 const writer = fs.createWriteStream(filePath);
 
 file.data.pipe(writer);
