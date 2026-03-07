@@ -1,167 +1,178 @@
 const axios = require("axios");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs-extra");
+const { createCanvas } = require("canvas");
 
 const API_CONFIG_URL = "https://raw.githubusercontent.com/cyber-ullash/cyber-ullash/refs/heads/main/UllashApi.json";
 
+// owner encoded
+const ownerEncoded = "QWxpaHNhbiBTaG91cm92";
+function getOwner() {
+  return Buffer.from(ownerEncoded, "base64").toString("utf8");
+}
+
 const getApiUrl = async () => {
-    try {
-        const response = await axios.get(API_CONFIG_URL);
-        const albumUrl = response.data.album;
-        if (!albumUrl) throw new Error("Album API URL missing");
-        return albumUrl;
-    } catch (err) {
-        console.error("API URL Error:", err);
-        throw new Error("Album API Fetch Failed");
-    }
+  try {
+    const res = await axios.get(API_CONFIG_URL);
+    if (!res.data.album) throw new Error("Album API URL missing");
+    return res.data.album;
+  } catch (err) {
+    console.error(err);
+    throw new Error("Album API Fetch Failed");
+  }
 };
 
 module.exports.config = {
-    name: "album",
-    aliases: [],
-    version: "1.0.2", 
-    author: "Ullash",
-    countDown: 5,
-    role: 0,
-    category: "Media",
-    shortDescription: "Video/Photo Album",
-    longDescription: "Choose album categories and receive media instantly",
-    guide: "{p}album"
+  name: "album",
+  version: "2.0",
+  author: "Ullash + Edited by Shourov",
+  countDown: 5,
+  role: 0,
+  category: "Media",
+  guide: "{p}album"
 };
 
+// banner generator
+async function generateBanner(list) {
+
+  const width = 900;
+  const height = 600;
+
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext("2d");
+
+  const grad = ctx.createLinearGradient(0,0,width,height);
+  grad.addColorStop(0,"#0f2027");
+  grad.addColorStop(1,"#2c5364");
+
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,width,height);
+
+  ctx.strokeStyle="#00ffff";
+  ctx.lineWidth=8;
+  ctx.strokeRect(10,10,width-20,height-20);
+
+  ctx.strokeStyle="#ff00ff";
+  ctx.strokeRect(20,20,width-40,height-40);
+
+  ctx.shadowColor="#00ffff";
+  ctx.shadowBlur=25;
+
+  ctx.fillStyle="#ffffff";
+  ctx.font="bold 40px Arial";
+  ctx.textAlign="center";
+
+  ctx.fillText("CHOOSE AN ALBUM CATEGORY", width/2, 80);
+
+  ctx.shadowBlur=0;
+
+  ctx.font="26px Arial";
+  ctx.fillStyle="#00ffff";
+
+  let y = 150;
+
+  list.forEach((cat,i)=>{
+    ctx.fillText(`${i+1}. ${cat}`, width/2, y);
+    y += 40;
+  });
+
+  ctx.fillStyle="#ffffff";
+  ctx.font="20px Arial";
+  ctx.fillText(`Owner: ${getOwner()}`, width/2, height-40);
+
+  const filePath = path.join(__dirname,"cache","album_menu.png");
+
+  await fs.ensureDir(path.dirname(filePath));
+  fs.writeFileSync(filePath, canvas.toBuffer());
+
+  return filePath;
+}
+
 module.exports.onStart = async function ({ message, event, args }) {
-    const { senderID, messageID, threadID } = event;
 
-    const page1 = ["funny", "islamic", "sad", "anime", "cartoon", "love", "horny", "couple", "flower", "marvel"];
-    const page2 = ["aesthetic", "sigma", "lyrics", "cat", "18plus", "freefire", "football", "girl", "friends", "cricket"];
+  const page1 = ["funny","islamic","sad","anime","cartoon","love","horny","couple","flower","marvel"];
+  const page2 = ["aesthetic","sigma","lyrics","cat","18plus","freefire","football","girl","friends","cricket"];
 
-    const categoriesAll = [
-        "funny", "islamic", "sad", "anime", "cartoon", "love", "horny",
-        "couple", "flower", "marvel", "aesthetic", "sigma", "lyrics",
-        "cat", "18plus", "freefire", "football", "girl", "friend", "cricket"
-    ];
+  if (args[0] === "2") {
 
-    const toBold = (t) => t.replace(/[a-z]/g, c => String.fromCodePoint(0x1d41a + c.charCodeAt(0) - 97));
-    const toBoldNum = (n) => String(n).replace(/[0-9]/g, (c) => String.fromCodePoint(0x1d7ec + parseInt(c)));
+    const banner = await generateBanner(page2);
 
-    const formatOptions = (list, start = 1) =>
-        list.map((opt, i) => `✨ | ${toBoldNum(i + start)}. ${toBold(opt)}`).join("\n");
+    return message.reply({
+      attachment: fs.createReadStream(banner)
+    }, (err,info)=>{
+      global.GoatBot.onReply.set(info.messageID,{
+        commandName:"album",
+        author:event.senderID,
+        categories:page2
+      });
+    });
+  }
 
-    if (args[0] === "2") {
-        let txt =
-            "💫 𝐂𝐡𝐨𝐨𝐬𝐞 𝐚𝐧 𝐚𝐥𝐛𝐮𝐦 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐲 𝐁𝐚𝐛𝐲 💫\n" +
-            "✺━━━━━━━◈◉◈━━━━━━━✺\n" +
-            formatOptions(page2, 11) +
-            "\n✺━━━━━━━◈◉◈━━━━━━━✺\n🎯 | 𝐏𝐚𝐠𝐞 [𝟐/𝟐]\n✺━━━━━━━◈◉◈━━━━━━━✺";
+  const banner = await generateBanner(page1);
 
-        return message.reply(txt, (err, info) => {
-            global.GoatBot.onReply.set(info.messageID, {
-                commandName: module.exports.config.name,
-                author: senderID,
-                categories: page2,
-                page: 2 
-            });
-        });
-    }
+  return message.reply({
+    attachment: fs.createReadStream(banner)
+  }, (err,info)=>{
+    global.GoatBot.onReply.set(info.messageID,{
+      commandName:"album",
+      author:event.senderID,
+      categories:page1
+    });
+  });
 
-    if (!args[0] || args[0].toLowerCase() === "list") {
-        let txt =
-            "💫 𝐂𝐡𝐨𝐨𝐬𝐞 𝐚𝐧 𝐚𝐥𝐛𝐮𝐦 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐲 𝐁𝐚𝐛𝐲 💫\n" +
-            "✺━━━━━━━◈◉◈━━━━━━━✺\n" +
-            formatOptions(page1) +
-            `\n✺━━━━━━━◈◉◈━━━━━━━✺\n🎯 | 𝐏𝐚𝐠𝐞 [𝟏/𝟐]\nℹ | 𝐓𝐲𝐩𝐞: /album 2 - 𝐧𝐞𝐱𝐭 𝐩𝐚𝐠𝐞\n✺━━━━━━━◈◉◈━━━━━━━✺`;
-
-        return message.reply(txt, (err, info) => {
-            global.GoatBot.onReply.set(info.messageID, {
-                commandName: module.exports.config.name,
-                author: senderID,
-                categories: page1,
-                page: 1
-            });
-        });
-    }
-
-    const givenCategory = args[0].toLowerCase();
-    if (!categoriesAll.includes(givenCategory))
-        return message.reply("❌ 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐲! 𝐓𝐲𝐩𝐞 '/album' 𝐭𝐨 𝐬𝐞𝐞 𝐥𝐢𝐬𝐭.");
-
-    return message.reply(`📁 Loading Baby... category: ${givenCategory}... Please use the menu for now.`);
 };
 
 module.exports.onReply = async function ({ message, event, Reply }) {
 
-    if (event.senderID !== Reply.author)
-        return message.reply("❌ 𝐎𝐧𝐥𝐲 𝐭𝐡𝐞 𝐮𝐬𝐞𝐫 𝐰𝐡𝐨 𝐨𝐩𝐞𝐧𝐞𝐝 𝐭𝐡𝐞 𝐦𝐞𝐧𝐮 𝐜𝐚𝐧 𝐬𝐞𝐥𝐞𝐜𝐭.");
+  if (event.senderID !== Reply.author)
+    return message.reply("❌ Only menu opener can choose.");
 
-    let num = parseInt(event.body);
-    if (isNaN(num)) return message.reply("❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐫𝐞𝐩𝐥𝐲 𝐰𝐢𝐭𝐡 𝐚 𝐧𝐮𝐦𝐛𝐞𝐫.");
+  const num = parseInt(event.body);
 
-    const selectedList = Reply.categories;
+  if (isNaN(num))
+    return message.reply("❌ Reply with a number.");
 
-    if (Reply.page === 2 || (num > 10 && num <= 20)) {
-        if (num > 10) num = num - 10;
-    }
+  const category = Reply.categories[num-1];
 
-    if (num < 1 || num > selectedList.length)
-        return message.reply("❌ 𝐈𝐧𝐯𝐚𝐥𝐢𝐝 𝐨𝐩𝐭𝐢𝐨𝐧.");
+  if (!category)
+    return message.reply("❌ Invalid option.");
 
-    const finalCategory = selectedList[num - 1];
+  if ((category === "horny" || category === "18plus") && event.senderID !== "61588161951831")
+    return message.reply("🚫 You are not authorized.");
 
-    // Admin Check
-    const adminID = "61588161951831";
-    if ((finalCategory === "horny" || finalCategory === "18plus") && event.senderID !== adminID)
-        return message.reply("🚫 𝐘𝐨𝐮 𝐚𝐫𝐞 𝐧𝐨𝐭 𝐚𝐮𝐭𝐡𝐨𝐫𝐢𝐳𝐞𝐝 𝐟𝐨𝐫 𝐭𝐡𝐢𝐬 𝐜𝐚𝐭𝐞𝐠𝐨𝐫𝐲.");
+  try {
 
-    const captions = {
-        funny: "🤣 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐅𝐮𝐧𝐧𝐲 𝐯𝐢𝐝𝐞𝐨",
-        islamic: "😇 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐈𝐬𝐥𝐚𝐦𝐢𝐜 𝐯𝐢𝐝𝐞𝐨",
-        sad: "🥺 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐒𝐚𝐝 𝐯𝐢𝐝𝐞𝐨",
-        anime: "😘 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐀𝐧𝐢𝐦𝐞 𝐯𝐢𝐝𝐞𝐨",
-        cartoon: "😇 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐂𝐚𝐫𝐭𝐨𝐨𝐧 𝐯𝐢𝐝𝐞𝐨",
-        love: "😇 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐋𝐨𝐯𝐞 𝐯𝐢𝐝𝐞𝐨",
-        horny: "🥵 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐇𝐨𝐫𝐧𝐲 𝐯𝐢𝐝𝐞𝐨",
-        couple: "❤️ > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐂𝐨𝐮𝐩𝐥𝐞 𝐯𝐢𝐝𝐞𝐨",
-        flower: "🌸 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐅𝐥𝐨𝐰𝐞𝐫 𝐯𝐢𝐝𝐞𝐨",
-        marvel: "🎯 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐌𝐚𝐫𝐯𝐞𝐥 𝐯𝐢𝐝𝐞𝐨",
-        aesthetic: "🎀 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐀𝐞𝐬𝐭𝐡𝐞𝐭𝐢𝐜 𝐯𝐢𝐝𝐞𝐨",
-        sigma: "🐤 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐒𝐢𝐠𝐦𝐚 𝐯𝐢𝐝𝐞𝐨",
-        lyrics: "🥰 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐋𝐲𝐫𝐢𝐜𝐬 𝐯𝐢𝐝𝐞𝐨",
-        cat: "🐱 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐂𝐚𝐭 𝐯𝐢𝐝𝐞𝐨",
-        "18plus": "🔞 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝟏𝟖+ 𝐯𝐢𝐝𝐞𝐨",
-        freefire: "🎮 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐅𝐫𝐞𝐞𝐟𝐢𝐫𝐞 𝐯𝐢𝐝𝐞𝐨",
-        football: "⚽ > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐅𝐨𝐨𝐭𝐛𝐚𝐥𝐥 𝐯𝐢𝐝𝐞𝐨",
-        girl: "👧 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐆𝐢𝐫𝐥 𝐯𝐢𝐝𝐞𝐨",
-        friends: "👫 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐅𝐫𝐢𝐞𝐧𝐝𝐬 𝐯𝐢𝐝𝐞𝐨",
-        cricket: "🏏 > 𝐍𝐚𝐰 𝐁𝐚𝐛𝐲 𝐂𝐫𝐢𝐤𝐞𝐭 𝐯𝐢𝐝𝐞𝐨"
-    };
+    const BASE_API_URL = await getApiUrl();
 
-    try {
-        const BASE_API_URL = await getApiUrl();
-        const res = await axios.get(`${BASE_API_URL}/album?type=${finalCategory}`);
+    const res = await axios.get(`${BASE_API_URL}/album?type=${category}`);
 
-        const media = res.data.data;
-        if (!media) return message.reply("❌ 𝐅𝐚𝐢𝐥𝐞𝐝 𝐭𝐨 𝐬𝐞𝐧𝐝 𝐯𝐢𝐝𝐞𝐨.");
+    const media = res.data.data;
 
-        const fileName = path.basename(media).split("?")[0];
-        const savePath = path.join(__dirname, "cache", `${Date.now()}_${fileName}`);
+    if (!media)
+      return message.reply("❌ Failed to load media.");
 
-        const file = await axios.get(media, { responseType: "stream" });
-        const writer = fs.createWriteStream(savePath);
+    const filePath = path.join(__dirname,"cache",`${Date.now()}.mp4`);
 
-        file.data.pipe(writer);
+    const file = await axios.get(media,{responseType:"stream"});
 
-        writer.on("finish", () => {
-            message.reply(
-                {
-                    body: captions[finalCategory] || "✨ Here is your video Baby", // Fixed variable name
-                    attachment: fs.createReadStream(savePath)
-                },
-                () => fs.unlinkSync(savePath)
-            );
-        });
+    const writer = fs.createWriteStream(filePath);
 
-    } catch (err) {
-        console.error(err);
-        return message.reply("❌ 𝐒𝐨𝐦𝐞𝐭𝐡𝐢𝐧𝐠 𝐰𝐞𝐧𝐭 𝐰𝐫𝐨𝐧𝐠. 𝐓𝐫𝐲 𝐚𝐠𝐚𝐢𝐧!");
-    }
+    file.data.pipe(writer);
+
+    writer.on("finish",()=>{
+
+      message.reply({
+        body:`✨ Here is your ${category} video`,
+        attachment: fs.createReadStream(filePath)
+      }, ()=> fs.unlinkSync(filePath));
+
+    });
+
+  } catch (err) {
+
+    console.error(err);
+    message.reply("❌ Something went wrong.");
+
+  }
+
 };
