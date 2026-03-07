@@ -8,6 +8,7 @@ const API_CONFIG_URL = "https://raw.githubusercontent.com/cyber-ullash/cyber-ull
 
 // owner encoded
 const ownerEncoded = "QWxpaHNhbiBTaG91cm92";
+
 function getOwner(){
 return Buffer.from(ownerEncoded,"base64").toString("utf8");
 }
@@ -19,8 +20,8 @@ return res.data.album;
 
 module.exports.config = {
 name: "album",
-version: "5.0",
-author: "Ullash + Premium UI by Alihsan Shourov",
+version: "5.1",
+author: "Ullash + Fixed by Shourov",
 countDown: 5,
 role: 0,
 category: "Media"
@@ -40,7 +41,10 @@ const filePath = path.join(__dirname,"cache","album_menu.gif");
 
 await fs.ensureDir(path.dirname(filePath));
 
-encoder.createReadStream().pipe(fs.createWriteStream(filePath));
+const stream = encoder.createReadStream();
+const writeStream = fs.createWriteStream(filePath);
+
+stream.pipe(writeStream);
 
 encoder.start();
 encoder.setRepeat(0);
@@ -52,7 +56,6 @@ const ctx = canvas.getContext("2d");
 
 for(let frame=0; frame<30; frame++){
 
-// moving background
 const grad = ctx.createLinearGradient(frame*20,0,width,height);
 
 grad.addColorStop(0,"#000000");
@@ -61,20 +64,17 @@ grad.addColorStop(1,"#002c2c");
 ctx.fillStyle = grad;
 ctx.fillRect(0,0,width,height);
 
-// neon border
+// border
 ctx.lineWidth = 8;
-
 ctx.strokeStyle="#00ff00";
 ctx.shadowColor="#00ff00";
 ctx.shadowBlur=20;
-
 ctx.strokeRect(10,10,width-20,height-20);
 
 ctx.shadowBlur=0;
 
-// title glow
+// title
 ctx.textAlign="center";
-
 ctx.shadowColor="#00ff00";
 ctx.shadowBlur=25;
 
@@ -118,7 +118,7 @@ ctx.fillText("Type: /album 2 - next page",width/2,540);
 else
 ctx.fillText("Type: /album - previous page",width/2,540);
 
-// owner glow
+// owner
 ctx.fillText(`Owner: ${getOwner()}`,width/2,580);
 
 encoder.addFrame(ctx);
@@ -126,6 +126,9 @@ encoder.addFrame(ctx);
 }
 
 encoder.finish();
+
+// wait until file finished
+await new Promise(resolve => writeStream.on("finish", resolve));
 
 return filePath;
 
@@ -140,7 +143,7 @@ if(args[0]=="2"){
 const banner = await createMenu(page2,2);
 
 return message.reply({
-attachment:fs.createReadStream(banner)
+attachment: fs.createReadStream(banner)
 },(err,info)=>{
 
 global.GoatBot.onReply.set(info.messageID,{
@@ -157,7 +160,7 @@ page:2
 const banner = await createMenu(page1,1);
 
 return message.reply({
-attachment:fs.createReadStream(banner)
+attachment: fs.createReadStream(banner)
 },(err,info)=>{
 
 global.GoatBot.onReply.set(info.messageID,{
@@ -211,7 +214,7 @@ writer.on("finish",()=>{
 
 message.reply({
 body:`✨ Here is your ${category} video`,
-attachment:fs.createReadStream(filePath)
+attachment: fs.createReadStream(filePath)
 },()=>fs.unlinkSync(filePath));
 
 });
