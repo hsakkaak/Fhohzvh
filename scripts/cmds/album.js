@@ -7,6 +7,7 @@ const GIFEncoder = require("gifencoder");
 const API_CONFIG_URL = "https://raw.githubusercontent.com/cyber-ullash/cyber-ullash/refs/heads/main/UllashApi.json";
 
 const ownerEncoded = "QWxpaHNhbiBTaG91cm92";
+
 function getOwner(){
 return Buffer.from(ownerEncoded,"base64").toString("utf8");
 }
@@ -18,8 +19,8 @@ return res.data.album;
 
 module.exports.config = {
 name: "album",
-version: "7.0",
-author: "Ullash + Shourov UI Pro",
+version: "8.0",
+author: "Ullash + Shourov Ultimate UI",
 countDown: 5,
 role: 0,
 category: "Media"
@@ -34,12 +35,14 @@ const width = 900;
 const height = 620;
 
 const encoder = new GIFEncoder(width,height);
+
 const filePath = path.join(__dirname,"cache","album_menu.gif");
 
 await fs.ensureDir(path.dirname(filePath));
 
 const stream = encoder.createReadStream();
 const writeStream = fs.createWriteStream(filePath);
+
 stream.pipe(writeStream);
 
 encoder.start();
@@ -52,53 +55,71 @@ const ctx = canvas.getContext("2d");
 
 for(let frame=0; frame<30; frame++){
 
-// gradient background
-const grad = ctx.createLinearGradient(0,0,width,height);
-grad.addColorStop(0,"#0c1c3a");
-grad.addColorStop(0.5,"#003b2f");
-grad.addColorStop(1,"#05172b");
-
-ctx.fillStyle = grad;
+// BLACK BACKGROUND
+ctx.fillStyle="#000000";
 ctx.fillRect(0,0,width,height);
 
-// pulse animation
-const pulse = Math.sin(frame*0.4)*5;
+const pulse = Math.sin(frame*0.4)*6;
 
-// MAIN BORDER (green)
-ctx.lineWidth = 6;
+// OUTER BORDER
 ctx.strokeStyle="#00ff88";
+ctx.lineWidth=6;
 ctx.shadowColor="#00ff88";
 ctx.shadowBlur=20;
-ctx.strokeRect(8-pulse,8-pulse,width-16+(pulse*2),height-16+(pulse*2));
+
+ctx.strokeRect(
+10-pulse,
+10-pulse,
+width-20+(pulse*2),
+height-20+(pulse*2)
+);
+
 ctx.shadowBlur=0;
 
-// TITLE BOX (yellow)
+// TITLE BOX
 ctx.strokeStyle="#ffd500";
 ctx.lineWidth=4;
-ctx.strokeRect(60,20,780,80);
 
-// CATEGORY BOX (blue)
+ctx.strokeRect(
+60-pulse,
+20-pulse,
+780+(pulse*2),
+80+(pulse*2)
+);
+
+// CATEGORY BOX
 ctx.strokeStyle="#00aaff";
-ctx.lineWidth=4;
-ctx.strokeRect(60,120,780,350);
 
-// OWNER BOX (yellow)
+ctx.strokeRect(
+60-pulse,
+120-pulse,
+780+(pulse*2),
+350+(pulse*2)
+);
+
+// OWNER BOX
 ctx.strokeStyle="#ffd500";
-ctx.lineWidth=4;
-ctx.strokeRect(260,500,380,60);
 
-// title text
+ctx.strokeRect(
+260-pulse,
+500-pulse,
+380+(pulse*2),
+60+(pulse*2)
+);
+
+// TITLE TEXT
 ctx.textAlign="center";
 ctx.fillStyle="#00ff88";
 ctx.font="bold 28px Arial";
+
 ctx.fillText("💫 CHOOSE AN ALBUM CATEGORY BABY 💫",width/2,60);
 
 ctx.fillStyle="#ffffff";
 ctx.font="18px Arial";
 ctx.fillText("✺━━━━━━━◈◉◈━━━━━━━✺",width/2,95);
 
-// categories
-let y = 160;
+// CATEGORY LIST
+let y = 150;
 
 ctx.font="bold 22px Arial";
 
@@ -106,27 +127,29 @@ list.forEach((cat,i)=>{
 
 ctx.fillStyle="#ff4040";
 ctx.fillText(`✨ | ${i+1}. ${cat}`,width/2,y);
+
 y+=30;
 
 });
 
-// page section
-ctx.fillStyle="#00aaff";
-ctx.font="20px Arial";
+// PAGE TEXT RIGHT SIDE
+ctx.textAlign="right";
 
-ctx.fillText("✺━━━━━━━◈◉◈━━━━━━━✺",width/2,410);
-ctx.fillText(`🎯 | Page [${page}/2]`,width/2,435);
+ctx.fillStyle="#00aaff";
+ctx.font="18px Arial";
+
+ctx.fillText(`🎯 Page [${page}/2]`,width-80,230);
 
 if(page==1)
-ctx.fillText("ℹ | Type: /album 2 - next page",width/2,460);
+ctx.fillText("Type: /album 2",width-80,260);
 else
-ctx.fillText("ℹ | Type: /album - previous page",width/2,460);
+ctx.fillText("Type: /album",width-80,260);
 
-ctx.fillText("✺━━━━━━━◈◉◈━━━━━━━✺",width/2,485);
-
-// owner
+// OWNER
+ctx.textAlign="center";
 ctx.fillStyle="#ffd500";
 ctx.font="bold 20px Arial";
+
 ctx.fillText(`Owner: ${getOwner()}`,width/2,540);
 
 encoder.addFrame(ctx);
@@ -134,9 +157,11 @@ encoder.addFrame(ctx);
 }
 
 encoder.finish();
+
 await new Promise(resolve => writeStream.on("finish", resolve));
 
 return filePath;
+
 }
 
 module.exports.onStart = async function({message,event,args}){
@@ -148,7 +173,7 @@ if(args[0]=="2"){
 const banner = await createMenu(page2,2);
 
 return message.reply({
-attachment: fs.createReadStream(banner)
+attachment:fs.createReadStream(banner)
 },(err,info)=>{
 
 global.GoatBot.onReply.set(info.messageID,{
@@ -165,7 +190,7 @@ page:2
 const banner = await createMenu(page1,1);
 
 return message.reply({
-attachment: fs.createReadStream(banner)
+attachment:fs.createReadStream(banner)
 },(err,info)=>{
 
 global.GoatBot.onReply.set(info.messageID,{
@@ -193,6 +218,7 @@ if(num<1||num>Reply.categories.length)
 return message.reply("❌ Invalid option.");
 
 const category = Reply.categories[num-1];
+
 const adminID="61588161951831";
 
 if((category=="horny"||category=="18plus") && event.senderID!==adminID)
@@ -201,12 +227,15 @@ return message.reply("🚫 You are not authorized.");
 try{
 
 const BASE_API_URL = await getApiUrl();
+
 const res = await axios.get(`${BASE_API_URL}/album?type=${category}`);
 
 const media = res.data.data;
+
 const filePath = path.join(__dirname,"cache",`${Date.now()}.mp4`);
 
 const file = await axios.get(media,{responseType:"stream"});
+
 const writer = fs.createWriteStream(filePath);
 
 file.data.pipe(writer);
@@ -215,7 +244,7 @@ writer.on("finish",()=>{
 
 message.reply({
 body:`✨ Here is your ${category} video`,
-attachment: fs.createReadStream(filePath)
+attachment:fs.createReadStream(filePath)
 },()=>fs.unlinkSync(filePath));
 
 });
