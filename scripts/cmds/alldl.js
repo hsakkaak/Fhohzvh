@@ -2,9 +2,9 @@ const axios = require("axios");
 const fs = require("fs");
 const { shortenURL } = global.utils;
 const baseApiUrl = async () => {
-  const base = await axios.get(
-    `https://raw.githubusercontent.com/cyber-ullash/cyber-ullash/refs/heads/main/UllashApi.json`,
-  );
+  const { data } = await axios.get(
+  `https://shourov-downloader.onrender.com/api/resolve?url=${encodeURIComponent(shourov)}`
+);
   return base.data.api;
 };
 
@@ -12,7 +12,7 @@ module.exports = {
   config: {
     name: "autodl",
     version: "1.0.1",
-    author: "Dipto",
+    author: "Alihsan Shourov",
     countDown: 0,
     role: 0,
     description: {
@@ -45,11 +45,13 @@ module.exports = {
         const path = __dirname + `/cache/diptoo.mp4`;
 
         const { data } = await axios.get(
-          `${await baseApiUrl()}/alldl?url=${encodeURIComponent(dipto)}`,
+          `${await baseApiUrl()}/alldl?url=${encodeURIComponent(shourov)}`,
         );
-        const vid = (
-          await axios.get(data.result, { responseType: "arraybuffer" })
-        ).data;
+        const videoUrl = data.data.formats[0].url;
+
+const vid = (
+  await axios.get(videoUrl, { responseType: "arraybuffer" })
+).data;
 
         fs.writeFileSync(path, Buffer.from(vid, "utf-8"));
         const url = await shortenURL(data.result);
@@ -57,7 +59,7 @@ module.exports = {
 
         api.sendMessage(
           {
-            body: `${data.cp || null}\n✅ | Link: ${url || null}`,
+            body: `🎬 ${data.data.title}\n✅ | Download: ${url}`,
 
             attachment: fs.createReadStream(path),
           },
